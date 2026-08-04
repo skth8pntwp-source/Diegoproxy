@@ -29,7 +29,6 @@
             flex-direction: column;
         }
 
-        /* Top Navigation Bar */
         header {
             background-color: #1e293b;
             padding: 1rem 2rem;
@@ -39,12 +38,6 @@
             border-bottom: 2px solid var(--accent-color);
             flex-wrap: wrap;
             gap: 1rem;
-        }
-
-        .logo-group {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
         }
 
         .logo-group h1 {
@@ -64,7 +57,6 @@
             color: var(--text-color);
         }
 
-        /* Controls & Filters Bar */
         .controls {
             padding: 1.5rem 2rem 0.5rem;
             display: flex;
@@ -120,7 +112,6 @@
             background-color: #475569;
         }
 
-        /* Category Chips */
         .categories {
             padding: 0.5rem 2rem 1rem;
             display: flex;
@@ -143,7 +134,6 @@
             color: var(--accent-color);
         }
 
-        /* Game Grid Container */
         .grid-container {
             padding: 1rem 2rem;
             display: grid;
@@ -164,6 +154,7 @@
             transition: transform 0.2s, box-shadow 0.2s;
             border: 1px solid #334155;
             text-align: center;
+            position: relative;
         }
 
         .card:hover {
@@ -197,7 +188,6 @@
             font-size: 0.75rem;
         }
 
-        /* Modal Overlay Window */
         .modal {
             display: none;
             position: fixed;
@@ -211,88 +201,28 @@
             align-items: center;
         }
 
-        .modal-content {
-            background-color: var(--card-bg);
-            width: 90%;
-            height: 90%;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid var(--accent-color);
-        }
-
-        .modal-header {
-            padding: 1rem;
-            background-color: #0f172a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            flex: 1;
-            background-color: #000;
-        }
-
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Dialog Modals */
         .dialog-box {
             background-color: var(--card-bg);
             padding: 2rem;
             border-radius: 12px;
             width: 90%;
-            max-width: 450px;
+            max-width: 500px;
             border: 1px solid var(--accent-color);
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
-
-        .chat-messages {
-            height: 200px;
-            background-color: #0f172a;
-            border-radius: 8px;
-            padding: 0.75rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .msg {
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            max-width: 80%;
-            font-size: 0.85rem;
-        }
-
-        .msg.user {
-            background-color: var(--accent-color);
-            align-self: flex-end;
-        }
-
-        .msg.ai {
-            background-color: #334155;
-            align-self: flex-start;
-        }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation -->
     <header>
         <div class="logo-group">
             <h1>Diego Proxy 🌸</h1>
         </div>
         <div>
             <button id="cloak-btn" class="btn btn-secondary" onclick="toggleCloak()">🕵️‍♂️ Classroom Cloak</button>
-            <button class="btn btn-secondary" onclick="toggleHaparaBypass()">⚡ Flush Tracker</button>
+            <button class="btn btn-secondary" onclick="toggleProxyModal()">🌐 Web Proxy</button>
             <button class="btn btn-secondary" onclick="toggleCloudModal()">☁️ Upload HTML</button>
             <button class="btn" onclick="toggleNolan()">💬 AI Assistant</button>
         </div>
@@ -302,7 +232,6 @@
         </div>
     </header>
 
-    <!-- Controls Bar -->
     <div class="controls">
         <div class="search-box">
             <input type="text" id="search" placeholder="Search unblocked games..." onkeyup="filterGames()">
@@ -310,7 +239,6 @@
         </div>
     </div>
 
-    <!-- Category Filters -->
     <div class="categories">
         <div class="chip" onclick="resetSearch()">All Games</div>
         <div class="chip" onclick="filterCategory('Roblox')">🟥 Roblox</div>
@@ -322,23 +250,17 @@
         <div class="chip" onclick="filterCategory('Custom')">☁️ Saved Uploads</div>
     </div>
 
-    <!-- Main Game Grid -->
-    <div class="grid-container" id="game-grid">
-        <!-- Cards generated dynamically via script.js -->
-    </div>
+    <div class="grid-container" id="game-grid"></div>
 
-    <!-- Fullscreen Game Player Modal -->
-    <div class="modal" id="player-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modal-title">Game Player</h3>
-                <div>
-                    <button class="btn btn-secondary" onclick="aboutBlankLaunch()">↗ Pop Out (about:blank)</button>
-                    <button class="btn" onclick="closeGame()">✖ Close</button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <iframe id="game-frame" src="" allowfullscreen></iframe>
+    <!-- Web Proxy Input Modal -->
+    <div class="modal" id="proxy-modal">
+        <div class="dialog-box">
+            <h3>🌐 Encrypted Web Proxy</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8;">Type any URL or web search query below to launch it safely inside an unblocked <code>about:blank</code> sandbox tab.</p>
+            <input type="text" id="proxy-url-input" placeholder="https://www.example.com or search..." onkeypress="if(event.key==='Enter') launchProxyUrl()">
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="toggleProxyModal()">Cancel</button>
+                <button class="btn" onclick="launchProxyUrl()">Launch Proxy</button>
             </div>
         </div>
     </div>
@@ -347,7 +269,7 @@
     <div class="modal" id="cloud-modal">
         <div class="dialog-box">
             <h3>Upload Offline HTML Game</h3>
-            <p style="font-size: 0.85rem; color: #94a3b8;">Select a single-file <code>.html</code> or <code>.htm</code> game saved on your device to store permanently in your browser.</p>
+            <p style="font-size: 0.85rem; color: #94a3b8;">Select a single-file <code>.html</code> or <code>.htm</code> game saved on your device.</p>
             <input type="file" id="file-input" accept=".html,.htm" onchange="handleBrowserFileUpload(event)" style="display: none;">
             <button class="btn" onclick="document.getElementById('file-input').click()">📁 Choose HTML File</button>
             <button class="btn btn-secondary" onclick="toggleCloudModal()">Cancel</button>
@@ -358,8 +280,8 @@
     <div class="modal" id="nolan-modal">
         <div class="dialog-box">
             <h3>Diego AI Chatbot 🌸</h3>
-            <div class="chat-messages" id="nolan-messages">
-                <div class="msg ai">Hello! Ask me anything or search your catalog! 🌸</div>
+            <div style="height: 180px; background-color: #0f172a; border-radius: 8px; padding: 0.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;" id="nolan-messages">
+                <div style="background-color: #334155; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem;">Hello! Use the Web Proxy button to browse any site. 🌸</div>
             </div>
             <div style="display: flex; gap: 0.5rem;">
                 <input type="text" id="nolan-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendNolanMessage()">
