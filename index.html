@@ -13,7 +13,7 @@
         <div class="logo-group">
             <h1>Diego Proxy 🌸</h1>
         </div>
-        <div>
+        <div class="nav-buttons">
             <button id="cloak-btn" class="btn btn-secondary" onclick="toggleCloak()">🕵️‍♂️ Classroom Cloak</button>
             <button class="btn btn-secondary" onclick="toggleProxyModal()">🌐 Web Proxy</button>
             <button class="btn btn-secondary" onclick="toggleCloudModal()">☁️ Upload HTML</button>
@@ -46,7 +46,7 @@
     <div class="grid-container" id="game-grid"></div>
 
     <!-- Web Proxy Input Modal -->
-    <div class="modal" id="proxy-modal">
+    <div class="modal" id="proxy-modal" onclick="if(event.target === this) toggleProxyModal()">
         <div class="dialog-box">
             <h3>🌐 Encrypted Web Proxy</h3>
             <p style="font-size: 0.85rem; color: #94a3b8;">Type any URL or web search query below to launch it safely inside an unblocked <code>about:blank</code> sandbox tab.</p>
@@ -59,7 +59,7 @@
     </div>
 
     <!-- Upload HTML Game Modal -->
-    <div class="modal" id="cloud-modal">
+    <div class="modal" id="cloud-modal" onclick="if(event.target === this) toggleCloudModal()">
         <div class="dialog-box">
             <h3>Upload Offline HTML Game</h3>
             <p style="font-size: 0.85rem; color: #94a3b8;">Select a single-file <code>.html</code> or <code>.htm</code> game saved on your device.</p>
@@ -70,7 +70,7 @@
     </div>
 
     <!-- AI Chat Modal -->
-    <div class="modal" id="nolan-modal">
+    <div class="modal" id="nolan-modal" onclick="if(event.target === this) toggleNolan()">
         <div class="dialog-box">
             <h3>Diego AI Chatbot 🌸</h3>
             <div style="height: 180px; background-color: #0f172a; border-radius: 8px; padding: 0.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;" id="nolan-messages">
