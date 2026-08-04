@@ -38,11 +38,13 @@
             align-items: center;
             gap: 12px;
             z-index: 100;
+            flex-wrap: wrap;
         }
 
         .stealth-btn-group {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .stealth-btn {
@@ -265,7 +267,7 @@
             text-overflow: ellipsis;
         }
 
-        #player-modal, #credits-modal {
+        #player-modal, #credits-modal, #cloud-modal {
             display: none;
             position: fixed;
             top: 0;
@@ -277,25 +279,26 @@
             flex-direction: column;
         }
 
-        #credits-modal {
+        #credits-modal, #cloud-modal {
             justify-content: center;
             align-items: center;
             background: rgba(11, 7, 20, 0.92);
             backdrop-filter: blur(16px);
         }
 
-        .credits-content {
-            background: rgba(26, 20, 38, 0.85);
+        .modal-card-content {
+            background: rgba(26, 20, 38, 0.9);
             border: 1px solid rgba(168, 85, 247, 0.4);
             padding: 30px;
             border-radius: 20px;
-            max-width: 420px;
+            max-width: 480px;
             width: 90%;
             text-align: center;
             box-shadow: 0 15px 40px rgba(0,0,0,0.6);
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: 15px;
         }
 
         .credits-avatar {
@@ -304,22 +307,49 @@
             border-radius: 50%;
             object-fit: cover;
             border: 3px solid var(--accent-color);
-            margin-bottom: 12px;
+            margin-bottom: 5px;
             box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
             background-color: #120e1e;
         }
 
-        .credits-content h2 {
+        .modal-card-content h2 {
             color: #f472b6;
-            margin-bottom: 10px;
             font-size: 1.6rem;
         }
 
-        .credits-content p {
+        .modal-card-content p {
             color: #cbd5e1;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             line-height: 1.5;
-            margin-bottom: 20px;
+        }
+
+        .cloud-box {
+            width: 100%;
+            background: rgba(18, 14, 30, 0.6);
+            border: 1px dashed rgba(168, 85, 247, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .cloud-box label {
+            font-size: 0.85rem;
+            color: #c084fc;
+            font-weight: bold;
+        }
+
+        .cloud-box input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            outline: none;
+            font-size: 0.85rem;
         }
 
         .modal-header {
@@ -549,6 +579,7 @@
             <span id="hapara-status">Hapara Blocker: Active</span>
         </div>
         <div class="stealth-btn-group">
+            <button class="stealth-btn" onclick="toggleCloudModal()">☁️ Diego Cloud</button>
             <button class="stealth-btn" onclick="toggleCredits()">🌸 Credits</button>
             <button class="stealth-btn" onclick="toggleHaparaBypass()" id="hapara-btn">🛡️ Flush Tracker</button>
             <button class="stealth-btn" onclick="toggleCloak()" id="cloak-btn">🕵️‍♂️ Classroom Cloak</button>
@@ -560,14 +591,15 @@
         <div class="date-text" id="date">Thursday, May 28</div>
         <div class="brand-title">Diego Hub 🌸</div>
         <div class="tags-row">
-            <span>⚡ Private</span> • <span>🔓 Unblocked</span> • <span>🛡️ Anti-Hapara</span>
+            <span>⚡ Private</span> • <span>☁️ Cloud Engine</span> • <span>🛡️ Anti-Hapara</span>
         </div>
 
         <div class="search-box-wrapper">
-            <input type="text" id="search" placeholder="Search popular games & Roblox apps..." onkeyup="filterGames()">
+            <input type="text" id="search" placeholder="Search popular games & apps..." onkeyup="filterGames()">
         </div>
 
         <div class="dock-bar">
+            <div class="dock-icon" title="My Cloud Games" onclick="filterCategory('Cloud')">☁️</div>
             <div class="dock-icon" title="Games" onclick="filterCategory('Game')">🎮</div>
             <div class="dock-icon" title="Music" onclick="filterCategory('Music')">🎵</div>
             <div class="dock-icon" title="Apps" onclick="filterCategory('App')">📱</div>
@@ -576,23 +608,50 @@
             <div class="dock-icon" title="Radio" onclick="filterCategory('Radio')">📻</div>
             <div class="dock-icon" title="Podcasts" onclick="filterCategory('Podcast')">🎙️</div>
             <div class="dock-icon" title="Tools" onclick="filterCategory('Tool')">🛠️</div>
-            <div class="dock-icon" title="News" onclick="filterCategory('News')">📰</div>
             <div class="dock-icon" title="Explore All" onclick="resetSearch()">✨</div>
         </div>
     </div>
 
     <main>
-        <div class="grid-heading">🔥 Popular Library & Unblocked Apps (900+ items)</div>
+        <div class="grid-heading">🔥 Library & Unblocked Cloud Games</div>
         <div class="grid" id="game-grid"></div>
     </main>
 
-    <!-- Credits Modal with Photo Upload & Persistence -->
+    <!-- Diego Cloud Manager Modal -->
+    <div id="cloud-modal">
+        <div class="modal-card-content">
+            <h2>Diego Cloud Storage ☁️🌸</h2>
+            <p>Upload offline HTML games, run isolated URLs, or backup your saved data straight from your own browser storage.</p>
+            
+            <div class="cloud-box">
+                <label>1. Upload Custom HTML Game to Cloud</label>
+                <input type="file" id="cloud-file-input" accept=".html,.htm" style="display: none;" onchange="uploadCloudGame(event)">
+                <button class="stealth-btn" onclick="document.getElementById('cloud-file-input').click()" style="width: 100%;">📂 Select .HTML File to Host</button>
+            </div>
+
+            <div class="cloud-box">
+                <label>2. Custom Cloud URL Launcher</label>
+                <input type="text" id="cloud-url-input" placeholder="https://example.com/game">
+                <button class="stealth-btn" onclick="launchCustomCloudUrl()" style="width: 100%;">🚀 Launch Web Game</button>
+            </div>
+
+            <div class="cloud-box" style="flex-direction: row; justify-content: space-between;">
+                <button class="stealth-btn" onclick="exportCloudBackup()" style="flex: 1;">💾 Export Backup</button>
+                <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="importCloudBackup(event)">
+                <button class="stealth-btn" onclick="document.getElementById('backup-file-input').click()" style="flex: 1;">📥 Import Backup</button>
+            </div>
+
+            <button class="close-btn" onclick="toggleCloudModal()" style="padding: 10px 20px; width: 100%;">Close ✕</button>
+        </div>
+    </div>
+
+    <!-- Credits Modal -->
     <div id="credits-modal">
-        <div class="credits-content">
+        <div class="modal-card-content">
             <img src="photo.png" id="user-photo" class="credits-avatar" alt="Diego" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Diego';">
             
             <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
-            <button class="stealth-btn" onclick="document.getElementById('avatar-input').click()" style="margin-bottom: 15px; font-size: 0.8rem;">📷 Change Photo</button>
+            <button class="stealth-btn" onclick="document.getElementById('avatar-input').click()" style="margin-bottom: 5px; font-size: 0.8rem;">📷 Change Photo</button>
 
             <h2>Created by Diego</h2>
             <p>I created this because all the stuff kept getting blocked, so I built my own since I was bored of games getting blocked!</p>
@@ -631,7 +690,7 @@
             <button class="close-btn" onclick="toggleNolan()">✕</button>
         </div>
         <div class="nolan-messages" id="nolan-messages">
-            <div class="msg ai">Hey there! I'm Nolan, your personal AI assistant here on Diego Hub. Need help finding a game, checking out scripts, or bypassing filters? Let me know! 🌸</div>
+            <div class="msg ai">Hey there! I'm Nolan, your personal AI assistant here on Diego Hub. Need help finding a game, uploading HTML games to your cloud, or bypassing filters? Let me know! 🌸</div>
         </div>
         <div class="nolan-input-area">
             <input type="text" id="nolan-input" placeholder="Ask Nolan anything..." onkeydown="if(event.key==='Enter') sendNolanMessage()">
@@ -640,11 +699,14 @@
     </div>
 
     <script>
+        let customCloudGames = [];
+
         window.addEventListener('DOMContentLoaded', () => {
             const savedAvatar = localStorage.getItem('diego_proxy_avatar');
             if (savedAvatar) {
                 document.getElementById('user-photo').src = savedAvatar;
             }
+            loadCloudGames();
         });
 
         function handleAvatarUpload(event) {
@@ -658,6 +720,109 @@
                 };
                 reader.readAsDataURL(file);
             }
+        }
+
+        // --- Diego Cloud Core Functions ---
+        function toggleCloudModal() {
+            const modal = document.getElementById('cloud-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function uploadCloudGame(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const htmlContent = e.target.result;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const gameName = file.name.replace(/\.[^/.]+$/, "");
+                const cloudObj = {
+                    title: gameName + " (Cloud)",
+                    url: blobUrl,
+                    rawHtml: htmlContent,
+                    emoji: "☁️",
+                    category: "Cloud"
+                };
+
+                customCloudGames.push(cloudObj);
+                saveCloudGames();
+                generateCatalog();
+                renderGames(games);
+                toggleCloudModal();
+                alert(`"${gameName}" successfully uploaded to Diego Cloud! 🌸`);
+            };
+            reader.readAsText(file);
+        }
+
+        function saveCloudGames() {
+            try {
+                const lightweightGames = customCloudGames.map(g => ({
+                    title: g.title,
+                    rawHtml: g.rawHtml,
+                    emoji: g.emoji,
+                    category: g.category
+                }));
+                localStorage.setItem('diego_cloud_games', JSON.stringify(lightweightGames));
+            } catch(e) {
+                alert("Storage quota reached! Game is loaded for this session.");
+            }
+        }
+
+        function loadCloudGames() {
+            const stored = localStorage.getItem('diego_cloud_games');
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    customCloudGames = parsed.map(g => {
+                        const blob = new Blob([g.rawHtml], { type: 'text/html' });
+                        return {
+                            ...g,
+                            url: URL.createObjectURL(blob)
+                        };
+                    });
+                    generateCatalog();
+                    renderGames(games);
+                } catch(e) {}
+            }
+        }
+
+        function launchCustomCloudUrl() {
+            const urlInput = document.getElementById('cloud-url-input').value.trim();
+            if (!urlInput) return;
+            openGame("Custom Cloud App", urlInput);
+            toggleCloudModal();
+        }
+
+        function exportCloudBackup() {
+            const backupData = {
+                avatar: localStorage.getItem('diego_proxy_avatar') || '',
+                cloudGames: localStorage.getItem('diego_cloud_games') || '[]'
+            };
+            const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'diego_hub_cloud_backup.json';
+            link.click();
+        }
+
+        function importCloudBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.avatar) localStorage.setItem('diego_proxy_avatar', data.avatar);
+                    if (data.cloudGames) localStorage.setItem('diego_cloud_games', data.cloudGames);
+                    location.reload();
+                } catch(err) {
+                    alert("Invalid backup file!");
+                }
+            };
+            reader.readAsText(file);
         }
 
         (function initHaparaBlocker() {
@@ -736,12 +901,12 @@
             const q = query.toLowerCase();
             if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
                 return "Hey! Ready to play some unblocked games or test out scripts?";
+            } else if (q.includes('cloud')) {
+                return "You can click 'Diego Cloud' at the top to upload any offline .html game directly into browser memory!";
             } else if (q.includes('game') || q.includes('play') || q.includes('recommend')) {
-                return "I recommend checking out Slope, 2048, or Google Pac-Man! You can also click 'About:Blank' for ultimate stealth.";
+                return "I recommend checking out Slope 3D, Geometry Dash, or Paper Minecraft! You can also click 'About:Blank' for ultimate stealth.";
             } else if (q.includes('hapara') || q.includes('tracker') || q.includes('blocker')) {
                 return "The Hapara blocker is active in the top bar! Click 'Flush Tracker' anytime to lock down the websocket feeds and scrub telemetry.";
-            } else if (q.includes('roblox') || q.includes('script') || q.includes('mm2')) {
-                return "Diego Hub has got you covered with custom web ports and sandbox emulators right here in the grid. Happy gaming! 🌸";
             } else {
                 return "That's awesome! I'm tracking right along with you on Diego Hub. Let me know if you need help finding anything specific in the 900+ games library!";
             }
@@ -762,20 +927,19 @@
 
         let games = [];
         
-        // Updated working HTML5 embeds & active Scratch IDs
         const basePopularGames = [
-            { title: "2048 Game", url: "https://2048game.com/", emoji: "🔢", category: "Game" },
-            { title: "Pac-Man Arcade", url: "https://www.google.com/logos/2010/pacman10-i.html", emoji: "👾", category: "Arcade" },
-            { title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Tool" },
-            { title: "Snake Arcade", url: "https://www.google.com/fbx?fbx=snake_arcade", emoji: "🐍", category: "Arcade" },
-            { title: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", emoji: "🧱", category: "Game" },
-            { title: "Geometry Dash Port", url: "https://scratch.mit.edu/projects/105500895/embed", emoji: "🟩", category: "Game" },
-            { title: "Super Mario HTML", url: "https://scratch.mit.edu/projects/16382101/embed", emoji: "🍄", category: "Game" },
-            { title: "Flappy Bird Web", url: "https://scratch.mit.edu/projects/18381180/embed", emoji: "🐤", category: "Game" }
+            { title: "Paper Minecraft", url: "https://turbowarp.org/10128407/embed", emoji: "🧱", category: "Game" },
+            { title: "Geometry Dash", url: "https://turbowarp.org/105500895/embed", emoji: "🟩", category: "Game" },
+            { title: "Flappy Bird", url: "https://turbowarp.org/18381180/embed", emoji: "🐤", category: "Game" },
+            { title: "Slope 3D", url: "https://turbowarp.org/609174067/embed", emoji: "⛷️", category: "Game" },
+            { title: "Retro Football", url: "https://turbowarp.org/764858013/embed", emoji: "🏈", category: "Game" },
+            { title: "1v1 Shooter", url: "https://turbowarp.org/789643501/embed", emoji: "🎯", category: "Game" },
+            { title: "Subway Runner", url: "https://turbowarp.org/752109843/embed", emoji: "🛹", category: "Game" },
+            { title: "Pac-Man Arcade", url: "https://turbowarp.org/389028042/embed", emoji: "👾", category: "Arcade" }
         ];
 
         function generateCatalog() {
-            games = [...basePopularGames];
+            games = [...customCloudGames, ...basePopularGames];
             
             const uniqueTitles = [
                 "Drift Hunters", "Shell Shockers", "Venge.io", "Smash Karts", "Krunker.io",
