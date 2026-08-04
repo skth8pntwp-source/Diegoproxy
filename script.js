@@ -11,7 +11,6 @@ let cdnGames = [];
 let currentUrl = '';
 let cloaked = false;
 
-// Active Hand-Curated Game Catalog
 const basePopularGames = [
     { id: 'rbx-1', title: "Bloxd.io (Bedwars/Obby)", url: "https://bloxd.io/", emoji: "🧱", category: "Roblox", isDefault: true },
     { id: 'rbx-2', title: "Voxiom.io (3D Build & Battle)", url: "https://voxiom.io/", emoji: "⚔️", category: "Roblox", isDefault: true },
@@ -30,9 +29,6 @@ const basePopularGames = [
 
 let allGames = [];
 
-// ==========================================
-// 2. APP INITIALIZATION
-// ==========================================
 window.addEventListener('DOMContentLoaded', async () => {
     updateClock();
     setInterval(updateClock, 1000);
@@ -61,9 +57,6 @@ function initIndexedDB() {
     });
 }
 
-// ==========================================
-// 3. CATALOG & RENDERING LOGIC
-// ==========================================
 function refreshGameCatalog() {
     allGames = [...customGames, ...basePopularGames, ...cdnGames];
     renderGames(allGames);
@@ -94,17 +87,22 @@ function renderGames(data) {
     });
 }
 
-// ==========================================
-// 4. PROXY & GAME LAUNCHER ROUTING
-// ==========================================
 function openGame(title, url) {
     currentUrl = url;
     aboutBlankLaunch();
 }
 
+// Explicit Modal Toggle Fix
 function toggleProxyModal() {
     const modal = document.getElementById('proxy-modal');
-    if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    if (!modal) return;
+    if (modal.style.display === 'flex') {
+        modal.style.display = 'none';
+    } else {
+        modal.style.display = 'flex';
+        const input = document.getElementById('proxy-url-input');
+        if (input) input.focus();
+    }
 }
 
 function launchProxyUrl() {
@@ -142,9 +140,6 @@ function aboutBlankLaunch() {
     }
 }
 
-// ==========================================
-// 5. CUSTOM STORAGE (INDEXEDDB FILE UPLOAD)
-// ==========================================
 function loadSavedGames() {
     return new Promise((resolve, reject) => {
         if (!db) return resolve();
@@ -232,9 +227,6 @@ async function deleteGame(event, gameId) {
     };
 }
 
-// ==========================================
-// 6. FILTERS & SEARCH
-// ==========================================
 function filterGames() {
     const query = document.getElementById('search').value.toLowerCase();
     const filtered = allGames.filter(g => g.title.toLowerCase().includes(query));
@@ -252,9 +244,6 @@ function resetSearch() {
     renderGames(allGames);
 }
 
-// ==========================================
-// 7. UI CONTROLS & MODALS
-// ==========================================
 function toggleCloudModal() {
     const modal = document.getElementById('cloud-modal');
     if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
