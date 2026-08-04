@@ -5,51 +5,31 @@ const STORE_NAME = 'custom_games';
 let db = null;
 
 let customGames = [];
-let cdnGames = [];
 
-// Hand-Curated List of REAL Working HTML5 Games
+// Working Unblocked HTML5 & CDN Games Catalog
 const basePopularGames = [
-    // --- CLASSICS & PUZZLE ---
-    { id: 'g1', title: "2048", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
+    // --- ROBLOX & CLOUD LAUNCHERS (Auto about:blank) ---
+    { id: 'rbx-1', title: "Roblox (Now.gg Cloud)", url: "https://now.gg/apps/roblox-corporation/5349/roblox.html", emoji: "🟥", category: "Roblox", isDefault: true },
+    { id: 'rbx-2', title: "Roblox Web Portal", url: "https://www.roblox.com/discover", emoji: "🌐", category: "Roblox", isDefault: true },
+
+    // --- 100% WORKING UNBLOCKED HTML5 GAMES ---
+    { id: 'g1', title: "2048 Classic", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
     { id: 'g2', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
     { id: 'g3', title: "Flappy Bird", url: "https://ellisonleao.github.io/clumsy-bird/", emoji: "🐤", category: "Arcade", isDefault: true },
     { id: 'g4', title: "Pac-Man Classic", url: "https://macek.github.io/google_pacman/", emoji: "👾", category: "Arcade", isDefault: true },
     { id: 'g5', title: "Canvas Tetris", url: "https://dionyziz.github.io/canvas-tetris/", emoji: "🧱", category: "Puzzle", isDefault: true },
     { id: 'g6', title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Clicker", isDefault: true },
     { id: 'g7', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true },
-    { id: 'g8', title: "Doodle Jump", url: "https://html5.gamedistribution.com/rvvAS48/bb22d4f208c04ec4a02d416973347078/index.html", emoji: "🐸", category: "Arcade", isDefault: true },
-    { id: 'g9', title: "Cut the Rope", url: "https://html5.gamedistribution.com/rvvAS48/a25287d3536d4f6a908051779b5c3281/index.html", emoji: "🍬", category: "Puzzle", isDefault: true },
-    { id: 'g10', title: "Fruit Ninja", url: "https://html5.gamedistribution.com/rvvAS48/c50c0ef4ff30456aa6a2c286e082829b/index.html", emoji: "🍉", category: "Arcade", isDefault: true },
-
-    // --- ACTION & RUNNERS ---
-    { id: 'g11', title: "Paper.io 2", url: "https://paper-io.com/", emoji: "📜", category: "Action", isDefault: true },
-    { id: 'g12', title: "Crossy Road", url: "https://crossyroad.io/", emoji: "🐔", category: "Action", isDefault: true },
-    { id: 'g13', title: "Subway Surfers", url: "https://subwaysurfers.com/", emoji: "🏃", category: "Action", isDefault: true },
-    { id: 'g14', title: "Geometry Dash", url: "https://geometrydash.io/", emoji: "🟦", category: "Action", isDefault: true },
-    { id: 'g15', title: "Temple Run 2", url: "https://html5.gamedistribution.com/rvvAS48/591d5735cfef41b6a71cb0a81180eb78/index.html", emoji: "🗿", category: "Action", isDefault: true },
-    { id: 'g16', title: "Cluster Rush", url: "https://clusterrush.io/", emoji: "🚚", category: "Action", isDefault: true },
-    { id: 'g17', title: "Vex 6", url: "https://html5.gamedistribution.com/rvvAS48/9bc490dd9ec24f5a895c1c4f5263a2a6/index.html", emoji: "🏃", category: "Action", isDefault: true },
-    { id: 'g18', title: "Vex 7", url: "https://html5.gamedistribution.com/rvvAS48/6d22ffc32dbf4ef1960bd27fdd7459ef/index.html", emoji: "🤸", category: "Action", isDefault: true },
-
-    // --- SPORTS & RACING ---
-    { id: 'g19', title: "Moto X3M", url: "https://motox3m.co/", emoji: "🏍️", category: "Sports", isDefault: true },
-    { id: 'g20', title: "Moto X3M Winter", url: "https://html5.gamedistribution.com/rvvAS48/a2df4edaa38d4f049d5bfb9f1d072f87/index.html", emoji: "❄️", category: "Sports", isDefault: true },
-    { id: 'g21', title: "Moto X3M Pool Party", url: "https://html5.gamedistribution.com/rvvAS48/48d904b7849e493e82d56c80537be4d6/index.html", emoji: "🏊", category: "Sports", isDefault: true },
-    { id: 'g22', title: "Basket Random", url: "https://twoplayergames.org/game/basket-random", emoji: "🏀", category: "Sports", isDefault: true },
-    { id: 'g23', title: "Soccer Random", url: "https://twoplayergames.org/game/soccer-random", emoji: "⚽", category: "Sports", isDefault: true },
-    { id: 'g24', title: "Basketball Stars", url: "https://html5.gamedistribution.com/rvvAS48/8fb81e05d0e2417e88258525b68df9f2/index.html", emoji: "⛹️", category: "Sports", isDefault: true },
-    { id: 'g25', title: "Retro Bowl", url: "https://game316006.konggames.com/gamez/0031/6006/live/index.html", emoji: "🏈", category: "Sports", isDefault: true },
-    { id: 'g26', title: "Smash Karts", url: "https://smashkarts.io/", emoji: "🏎️", category: "Sports", isDefault: true },
-
-    // --- SIMULATION & STRATEGY ---
-    { id: 'g27', title: "BitLife Simulator", url: "https://bitlifeonline.com/", emoji: "🧬", category: "Simulation", isDefault: true },
-    { id: 'g28', title: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", emoji: "⛏️", category: "Simulation", isDefault: true },
-    { id: 'g29', title: "Bloons TD 4", url: "https://html5.gamedistribution.com/rvvAS48/d9c79f33fb854f3484f23e6702d1d0f5/index.html", emoji: "🎈", category: "Strategy", isDefault: true },
-
-    // --- EXTERNAL FRAME LAUNCHERS ---
-    { id: 'g30', title: "1v1.LOL", url: "https://1v1.lol/", emoji: "🎯", category: "Action", isDefault: true },
-    { id: 'g31', title: "Roblox Web", url: "https://www.roblox.com/", emoji: "🟥", category: "Action", isDefault: true },
-    { id: 'g32', title: "Fortnite Cloud", url: "https://www.xbox.com/play/games/fortnite", emoji: "⚡", category: "Action", isDefault: true }
+    
+    // --- WORKING EMBEDS FROM GITHUB STATIC REPOS ---
+    { id: 'g8', title: "1v1.LOL", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/1v1-lol/index.html", emoji: "🎯", category: "Action", isDefault: true },
+    { id: 'g9', title: "Doodle Jump", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/doodle-jump/index.html", emoji: "🐸", category: "Arcade", isDefault: true },
+    { id: 'g10', title: "Geometry Dash", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/geometry-dash/index.html", emoji: "🟦", category: "Action", isDefault: true },
+    { id: 'g11', title: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", emoji: "⛏️", category: "Simulation", isDefault: true },
+    { id: 'g12', title: "Retro Bowl", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/retro-bowl/index.html", emoji: "🏈", category: "Sports", isDefault: true },
+    { id: 'g13', title: "BitLife", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/bitlife/index.html", emoji: "🧬", category: "Simulation", isDefault: true },
+    { id: 'g14', title: "Moto X3M", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/motox3m/index.html", emoji: "🏍️", category: "Sports", isDefault: true },
+    { id: 'g15', title: "Slope", url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/slope/index.html", emoji: "⛷️", category: "Action", isDefault: true }
 ];
 
 let allGames = [];
@@ -62,7 +42,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
         await initIndexedDB();
         await loadSavedGames();
-        await loadRealCdnGames();
     } catch (err) {
         console.error('Initialization Note:', err);
     }
@@ -70,29 +49,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     refreshGameCatalog();
 });
 
-// Load Real External Game Catalog JSONs
-async function loadRealCdnGames() {
-    try {
-        const res = await fetch('https://cdn.jsdelivr.net/gh/gn-math/gn-math.github.io@main/config/games.json');
-        if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data)) {
-                cdnGames = data.map((g, idx) => ({
-                    id: `cdn-${idx}`,
-                    title: g.name || g.title || `Game ${idx}`,
-                    url: g.url || g.link,
-                    emoji: "🎮",
-                    category: g.category || "Game",
-                    isDefault: true
-                })).filter(g => g.url && g.title);
-            }
-        }
-    } catch (e) {
-        console.warn("CDN fetch fallback engaged.");
-    }
-}
-
-// 1. IndexedDB Setup
+// IndexedDB Setup
 function initIndexedDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -107,7 +64,7 @@ function initIndexedDB() {
     });
 }
 
-// 2. Load User Uploads
+// Load User Uploads
 function loadSavedGames() {
     return new Promise((resolve, reject) => {
         if (!db) return resolve();
@@ -134,7 +91,7 @@ function loadSavedGames() {
     });
 }
 
-// 3. Save User HTML Uploads Permanently
+// Handle Custom HTML File Uploads
 function handleBrowserFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -182,7 +139,7 @@ function handleBrowserFileUpload(event) {
     reader.readAsText(file);
 }
 
-// Delete Game
+// Delete Saved Game
 async function deleteGame(event, gameId) {
     event.stopPropagation();
     if (!confirm("Delete this saved game?")) return;
@@ -198,7 +155,7 @@ async function deleteGame(event, gameId) {
 }
 
 function refreshGameCatalog() {
-    allGames = [...customGames, ...basePopularGames, ...cdnGames];
+    allGames = [...customGames, ...basePopularGames];
     renderGames(allGames);
 }
 
@@ -231,7 +188,8 @@ let currentUrl = '';
 function openGame(title, url) {
     currentUrl = url;
     
-    if (url.includes('roblox.com') || url.includes('1v1.lol') || url.includes('xbox.com')) {
+    // Auto launch external sites into about:blank to bypass black screen iframe blocks
+    if (url.includes('roblox.com') || url.includes('now.gg') || url.includes('xbox.com')) {
         aboutBlankLaunch();
         return;
     }
@@ -290,7 +248,7 @@ function sendNolanMessage() {
     setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg ai';
-        aiMsg.innerText = `Diego Proxy loaded ${allGames.length} games! 🌸`;
+        aiMsg.innerText = `Diego Proxy online! 🌸`;
         container.appendChild(aiMsg);
         container.scrollTop = container.scrollHeight;
     }, 400);
