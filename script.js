@@ -1,53 +1,111 @@
-let games = [];
+const express = require('express');
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const cors = require('cors');
 
-// 100% working, active game URLs
-const basePopularGames = [
-  { title: "Slope Unblocked", url: "https://scratch.mit.edu/projects/23642055/embed", emoji: "🏎️", category: "Game" },
-  { title: "Geometry Dash", url: "https://scratch.mit.edu/projects/105500895/embed", emoji: "🟩", category: "Game" },
-  { title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Game" },
-  { title: "Pac-Man Arcade", url: "https://www.google.com/logos/2010/pacman10-i.html", emoji: "👾", category: "Game" },
-  { title: "Snake Arcade", url: "https://www.google.com/fbx?fbx=snake_arcade", emoji: "🐍", category: "Game" },
-  { title: "2048 Classic", url: "https://play2048.co/", emoji: "🔢", category: "Game" },
-  { title: "Tic Tac Toe", url: "https://www.google.com/search?q=tic+tac+toe", emoji: "❌", category: "Game" },
-  { title: "Minesweeper", url: "https://www.google.com/fbx?fbx=minesweeper", emoji: "💣", category: "Game" }
-];
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-function generateCatalog() {
-  games = [...basePopularGames];
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-  const uniqueTitles = [
-    "Drift Hunters", "Shell Shockers", "Venge.io", "Smash Karts", "Krunker.io",
-    "Getaway Shootout", "Basket Bros", "OvO", "ClusterRush", "Fireboy and Watergirl",
-    "Bad Ice Cream", "Duck Life", "Bloons Tower Defense", "Temple Run 2", "Bob the Robber"
-  ];
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const DB_FILE = path.join(__dirname, 'cloud_db.json');
 
-  uniqueTitles.forEach(title => {
-    games.push({
-      title: title,
-      url: "https://www.google.com/search?q=" + encodeURIComponent(title + " unblocked"),
-      emoji: "🎮",
-      category: "Game"
-    });
-  });
-
-  renderCatalog(games);
+if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR);
 }
 
-function renderCatalog(items) {
-  const container = document.getElementById("game-list") || document.getElementById("games") || document.body;
-  if (!container) return;
-
-  container.innerHTML = "";
-  items.forEach(game => {
-    const card = document.createElement("div");
-    card.className = "game-card";
-    card.innerHTML = `
-      <span class="emoji">${game.emoji}</span>
-      <h3>${game.title}</h3>
-      <a href="${game.url}" target="_blank">Play</a>
-    `;
-    container.appendChild(card);
-  });
+if (!fs.existsSync(DB_FILE)) {
+    fs.writeFileSync(DB_FILE, JSON.stringify([]));
 }
 
-document.addEventListener("DOMContentLoaded", generateCatalog);
+function getDatabase() {
+    try {
+        return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    } catch (err) {
+        return [];
+    }
+}
+
+function saveDatabase(data) {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, UPLOADS_DIR);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'text/html' || file.originalname.endsWith('.html') || file.originalname.endsWith('.htm')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only .html files are permitted on Diego Cloud!'));
+        }
+    }
+});
+
+app.get('/api/games', (req, res) => {
+    const games = getDatabase();
+    res.json(games);
+});
+
+app.post('/api/upload', upload.single('gameFile'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded.' });
+        }
+
+        const db = getDatabase();
+        const gameName = req.body.title || req.file.originalname.replace(/\.[^/.]+$/, "");
+        
+        const newGame = {
+            id: Date.now().toString(),
+            title: `${gameName} (Cloud Server)`,
+            url: `/uploads/${req.file.filename}`,
+            filename: req.file.filename,
+            emoji: "☁️",
+            category: "Cloud",
+            uploadedAt: new Date().toISOString()
+        };
+
+        db.unshift(newGame);
+        saveDatabase(db);
+
+        res.json({ success: true, game: newGame });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/games/:id', (req, res) => {
+    let db = getDatabase();
+    const game = db.find(g => g.id === req.params.id);
+    
+    if (game) {
+        const filePath = path.join(UPLOADS_DIR, game.filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+        db = db.filter(g => g.id !== req.params.id);
+        saveDatabase(db);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Game not found.' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(` Diego Cloud Server running on http://localhost:${PORT}`);
+});
