@@ -1,5 +1,5 @@
 // Database & Storage Variables
-const DB_NAME = 'DiegoHubDB';
+const DB_NAME = 'DiegoProxyDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'custom_games';
 let db = null;
@@ -7,7 +7,7 @@ let db = null;
 let customGames = [];
 let CDN_GAMES = [];
 
-// Base unblocked HTML5 game catalog
+// Base unblocked game catalog
 const basePopularGames = [
     { id: 'real-1', title: "2048", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
     { id: 'real-2', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
@@ -20,7 +20,15 @@ const basePopularGames = [
     { id: 'real-9', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true },
     { id: 'real-10', title: "Retro Bowl", url: "https://game316006.konggames.com/gamez/0031/6006/live/index.html", emoji: "🏈", category: "Sports", isDefault: true },
     { id: 'real-11', title: "BitLife Simulator", url: "https://bitlifeonline.com/", emoji: "🧬", category: "Simulation", isDefault: true },
-    { id: 'real-12', title: "Cluster Rush", url: "https://clusterrush.io/", emoji: "🚚", category: "Action", isDefault: true }
+    { id: 'real-12', title: "Cluster Rush", url: "https://clusterrush.io/", emoji: "🚚", category: "Action", isDefault: true },
+    { id: 'real-13', title: "1v1.LOL", url: "https://1v1.lol/", emoji: "🎯", category: "Action", isDefault: true },
+    { id: 'real-14', title: "Roblox Web", url: "https://www.roblox.com/", emoji: "🟥", category: "Action", isDefault: true },
+    { id: 'real-15', title: "Fortnite (Cloud)", url: "https://www.xbox.com/play/games/fortnite", emoji: "⚡", category: "Action", isDefault: true },
+    { id: 'real-16', title: "Smash Karts", url: "https://smashkarts.io/", emoji: "🏎️", category: "Action", isDefault: true },
+    { id: 'real-17', title: "Basket Random", url: "https://twoplayergames.org/game/basket-random", emoji: "🏀", category: "Sports", isDefault: true },
+    { id: 'real-18', title: "Moto X3M", url: "https://motox3m.co/", emoji: "🏍️", category: "Sports", isDefault: true },
+    { id: 'real-19', title: "Crossy Road", url: "https://crossyroad.io/", emoji: "🐔", category: "Arcade", isDefault: true },
+    { id: 'real-20', title: "Subway Surfers", url: "https://subwaysurfers.com/", emoji: "🏃", category: "Action", isDefault: true }
 ];
 
 let allGames = [];
@@ -33,7 +41,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
         await initIndexedDB();
         await loadSavedGames();
-        await loadMassiveGameCatalog();
+        await fetch1000PlusGames();
     } catch (err) {
         console.error('Initialization Note:', err);
     }
@@ -83,29 +91,32 @@ function loadSavedGames() {
     });
 }
 
-// 3. Fetch 900+ Open Source HTML5 Games from Unblocked CDNs
-async function loadMassiveGameCatalog() {
-    const mirrors = [
+// 3. Fetch 1,000+ Games Across Multiple CDN Sources
+async function fetch1000PlusGames() {
+    const endpoints = [
         'https://cdn.jsdelivr.net/gh/gn-math/gn-math.github.io@main/config/games.json',
         'https://raw.githubusercontent.com/3kh0/3kh0-assets/main/games.json',
-        'https://cdn.jsdelivr.net/gh/bubbls/m3th@main/games.json'
+        'https://cdn.jsdelivr.net/gh/bubbls/m3th@main/games.json',
+        'https://cdn.jsdelivr.net/gh/ubg100/ubg100.github.io@main/games.json'
     ];
 
-    for (const mirror of mirrors) {
+    let combinedList = [];
+
+    for (const sourceUrl of endpoints) {
         try {
-            const res = await fetch(mirror);
+            const res = await fetch(sourceUrl);
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
-                    CDN_GAMES = data
-                        .filter(g => g.name || g.title)
+                    const parsed = data
+                        .filter(g => g && (g.name || g.title))
                         .map((g, idx) => {
-                            let gameUrl = g.url || g.link || g.file;
+                            let gameUrl = g.url || g.link || g.file || '';
                             if (gameUrl && !gameUrl.startsWith('http')) {
                                 gameUrl = `https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/${gameUrl.replace(/^\//, '')}`;
                             }
                             return {
-                                id: `cdn-${idx}`,
+                                id: `cdn-${combinedList.length + idx}`,
                                 title: g.name || g.title,
                                 url: gameUrl,
                                 emoji: "🎮",
@@ -114,14 +125,23 @@ async function loadMassiveGameCatalog() {
                             };
                         })
                         .filter(g => g.url && !g.url.includes('turbowarp') && !g.url.includes('scratch'));
-                    
-                    if (CDN_GAMES.length > 50) break; // Break loop once games are retrieved
+
+                    combinedList.push(...parsed);
                 }
             }
         } catch (e) {
-            console.warn('Attempting secondary CDN mirror...');
+            console.warn(`Source skipped (${sourceUrl}):`, e);
         }
     }
+
+    // Deduplicate games by title
+    const seenTitles = new Set();
+    CDN_GAMES = combinedList.filter(game => {
+        const cleanTitle = game.title.trim().toLowerCase();
+        if (seenTitles.has(cleanTitle)) return false;
+        seenTitles.add(cleanTitle);
+        return true;
+    });
 }
 
 // 4. Save User HTML Uploads Permanently
@@ -165,7 +185,7 @@ function handleBrowserFileUpload(event) {
 
             refreshGameCatalog();
             toggleCloudModal();
-            alert(`"${file.name}" saved permanently! 🌸`);
+            alert(`"${file.name}" saved permanently to Diego Proxy! 🌸`);
         };
     };
 
@@ -274,7 +294,7 @@ function sendNolanMessage() {
     setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg ai';
-        aiMsg.innerText = `Loaded ${allGames.length} unblocked games! 🌸`;
+        aiMsg.innerText = `Diego Proxy loaded ${allGames.length} games! 🌸`;
         container.appendChild(aiMsg);
         container.scrollTop = container.scrollHeight;
     }, 400);
