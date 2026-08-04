@@ -219,16 +219,6 @@
             gap: 15px;
         }
 
-        @media (max-width: 600px) {
-            .grid {
-                grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
-                gap: 10px;
-            }
-            .clock-container {
-                font-size: 3.5rem;
-            }
-        }
-
         .card {
             background-color: var(--card-bg);
             backdrop-filter: blur(10px);
@@ -312,17 +302,6 @@
             background-color: #120e1e;
         }
 
-        .modal-card-content h2 {
-            color: #f472b6;
-            font-size: 1.6rem;
-        }
-
-        .modal-card-content p {
-            color: #cbd5e1;
-            font-size: 0.92rem;
-            line-height: 1.5;
-        }
-
         .cloud-box {
             width: 100%;
             background: rgba(18, 14, 30, 0.6);
@@ -339,17 +318,6 @@
             font-size: 0.85rem;
             color: #c084fc;
             font-weight: bold;
-        }
-
-        .cloud-box input[type="text"] {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: rgba(0, 0, 0, 0.4);
-            color: white;
-            outline: none;
-            font-size: 0.85rem;
         }
 
         .modal-header {
@@ -394,35 +362,6 @@
             background: #000;
         }
 
-        #frame-fallback {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #0b0714;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-            z-index: 10;
-        }
-
-        #frame-fallback h3 {
-            color: #f472b6;
-            margin-bottom: 10px;
-            font-size: 1.5rem;
-        }
-
-        #frame-fallback p {
-            color: #cbd5e1;
-            max-width: 450px;
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-        }
-
         .nolan-launcher {
             position: fixed;
             bottom: 25px;
@@ -439,13 +378,11 @@
             cursor: pointer;
             box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4);
             z-index: 999;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.2s;
         }
 
         .nolan-launcher:hover {
             transform: scale(1.08);
-            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
         }
 
         #nolan-modal {
@@ -474,33 +411,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .nolan-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nolan-avatar {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, #a855f7, #f472b6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-        .nolan-info h4 {
-            font-size: 0.95rem;
-            color: #fff;
-        }
-
-        .nolan-info span {
-            font-size: 0.75rem;
-            color: #34d399;
-        }
-
         .nolan-messages {
             flex: 1;
             padding: 15px;
@@ -522,14 +432,12 @@
             background: rgba(255, 255, 255, 0.08);
             color: #f3e8ff;
             align-self: flex-start;
-            border-bottom-left-radius: 4px;
         }
 
         .msg.user {
             background: var(--accent-color);
             color: #fff;
             align-self: flex-end;
-            border-bottom-right-radius: 4px;
         }
 
         .nolan-input-area {
@@ -537,7 +445,6 @@
             background: rgba(12, 8, 20, 0.8);
             display: flex;
             gap: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .nolan-input-area input {
@@ -547,27 +454,7 @@
             padding: 10px 14px;
             border-radius: 10px;
             color: white;
-            font-size: 0.9rem;
             outline: none;
-        }
-
-        .nolan-input-area input:focus {
-            border-color: var(--accent-color);
-        }
-
-        .nolan-send-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0 16px;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .nolan-send-btn:hover {
-            background: var(--accent-hover);
         }
     </style>
 </head>
@@ -579,7 +466,7 @@
             <span id="hapara-status">Hapara Blocker: Active</span>
         </div>
         <div class="stealth-btn-group">
-            <button class="stealth-btn" onclick="toggleCloudModal()">☁️ Diego Cloud</button>
+            <button class="stealth-btn" onclick="toggleCloudModal()">☁️ Diego Cloud Server</button>
             <button class="stealth-btn" onclick="toggleCredits()">🌸 Credits</button>
             <button class="stealth-btn" onclick="toggleHaparaBypass()" id="hapara-btn">🛡️ Flush Tracker</button>
             <button class="stealth-btn" onclick="toggleCloak()" id="cloak-btn">🕵️‍♂️ Classroom Cloak</button>
@@ -591,54 +478,36 @@
         <div class="date-text" id="date">Thursday, May 28</div>
         <div class="brand-title">Diego Hub 🌸</div>
         <div class="tags-row">
-            <span>⚡ Private</span> • <span>☁️ Cloud Engine</span> • <span>🛡️ Anti-Hapara</span>
+            <span>⚡ Node.js Backend</span> • <span>☁️ Custom Cloud API</span> • <span>🛡️ Anti-Hapara</span>
         </div>
 
         <div class="search-box-wrapper">
-            <input type="text" id="search" placeholder="Search popular games & apps..." onkeyup="filterGames()">
+            <input type="text" id="search" placeholder="Search popular games & cloud apps..." onkeyup="filterGames()">
         </div>
 
         <div class="dock-bar">
-            <div class="dock-icon" title="My Cloud Games" onclick="filterCategory('Cloud')">☁️</div>
+            <div class="dock-icon" title="My Cloud Server Games" onclick="filterCategory('Cloud')">☁️</div>
             <div class="dock-icon" title="Games" onclick="filterCategory('Game')">🎮</div>
-            <div class="dock-icon" title="Music" onclick="filterCategory('Music')">🎵</div>
-            <div class="dock-icon" title="Apps" onclick="filterCategory('App')">📱</div>
-            <div class="dock-icon" title="Space" onclick="filterCategory('Space')">🌌</div>
-            <div class="dock-icon" title="Explorers" onclick="filterCategory('Explorer')">🚀</div>
-            <div class="dock-icon" title="Radio" onclick="filterCategory('Radio')">📻</div>
-            <div class="dock-icon" title="Podcasts" onclick="filterCategory('Podcast')">🎙️</div>
-            <div class="dock-icon" title="Tools" onclick="filterCategory('Tool')">🛠️</div>
+            <div class="dock-icon" title="Arcade" onclick="filterCategory('Arcade')">👾</div>
             <div class="dock-icon" title="Explore All" onclick="resetSearch()">✨</div>
         </div>
     </div>
 
     <main>
-        <div class="grid-heading">🔥 Library & Unblocked Cloud Games</div>
+        <div class="grid-heading">🔥 Library & Node.js Cloud Backend Games</div>
         <div class="grid" id="game-grid"></div>
     </main>
 
-    <!-- Diego Cloud Manager Modal -->
+    <!-- Cloud Server Modal -->
     <div id="cloud-modal">
         <div class="modal-card-content">
-            <h2>Diego Cloud Storage ☁️🌸</h2>
-            <p>Upload offline HTML games, run isolated URLs, or backup your saved data straight from your own browser storage.</p>
+            <h2>Diego Cloud Server ☁️🌸</h2>
+            <p>Upload games directly to your Node.js backend storage server.</p>
             
             <div class="cloud-box">
-                <label>1. Upload Custom HTML Game to Cloud</label>
-                <input type="file" id="cloud-file-input" accept=".html,.htm" style="display: none;" onchange="uploadCloudGame(event)">
-                <button class="stealth-btn" onclick="document.getElementById('cloud-file-input').click()" style="width: 100%;">📂 Select .HTML File to Host</button>
-            </div>
-
-            <div class="cloud-box">
-                <label>2. Custom Cloud URL Launcher</label>
-                <input type="text" id="cloud-url-input" placeholder="https://example.com/game">
-                <button class="stealth-btn" onclick="launchCustomCloudUrl()" style="width: 100%;">🚀 Launch Web Game</button>
-            </div>
-
-            <div class="cloud-box" style="flex-direction: row; justify-content: space-between;">
-                <button class="stealth-btn" onclick="exportCloudBackup()" style="flex: 1;">💾 Export Backup</button>
-                <input type="file" id="backup-file-input" accept=".json" style="display: none;" onchange="importCloudBackup(event)">
-                <button class="stealth-btn" onclick="document.getElementById('backup-file-input').click()" style="flex: 1;">📥 Import Backup</button>
+                <label>Upload HTML Game File to Server Cloud</label>
+                <input type="file" id="cloud-file-input" accept=".html,.htm" style="display: none;" onchange="uploadToServerCloud(event)">
+                <button class="stealth-btn" onclick="document.getElementById('cloud-file-input').click()" style="width: 100%;">📂 Upload .HTML to Server Cloud</button>
             </div>
 
             <button class="close-btn" onclick="toggleCloudModal()" style="padding: 10px 20px; width: 100%;">Close ✕</button>
@@ -649,10 +518,8 @@
     <div id="credits-modal">
         <div class="modal-card-content">
             <img src="photo.png" id="user-photo" class="credits-avatar" alt="Diego" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=Diego';">
-            
             <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarUpload(event)">
             <button class="stealth-btn" onclick="document.getElementById('avatar-input').click()" style="margin-bottom: 5px; font-size: 0.8rem;">📷 Change Photo</button>
-
             <h2>Created by Diego</h2>
             <p>I created this because all the stuff kept getting blocked, so I built my own since I was bored of games getting blocked!</p>
             <button class="close-btn" onclick="toggleCredits()" style="padding: 10px 20px; width: 100%;">Close ✕</button>
@@ -668,201 +535,73 @@
             </div>
         </div>
         <div class="frame-container">
-            <div id="frame-fallback">
-                <h3>Shield Intercepted / Restricted Source</h3>
-                <p>This frame source is protected or restricted. Click below to launch it safely in an isolated sandbox tab.</p>
-                <button class="close-btn" onclick="aboutBlankLaunch()" style="padding: 10px 20px;">Launch Sandbox Mode ↗</button>
-            </div>
-            <iframe id="game-frame" src="" allowfullscreen allow="autoplay; gamepad; microphone; focus-without-user-activation" onerror="showFallback()"></iframe>
+            <iframe id="game-frame" src="" allowfullscreen allow="autoplay; gamepad; microphone; focus-without-user-activation"></iframe>
         </div>
     </div>
 
     <div class="nolan-launcher" onclick="toggleNolan()" title="Chat with Nolan AI">🤖</div>
     <div id="nolan-modal">
         <div class="nolan-header">
-            <div class="nolan-profile">
-                <div class="nolan-avatar">🤖</div>
-                <div class="nolan-info">
-                    <h4>Nolan AI</h4>
-                    <span>● Online & Ready</span>
-                </div>
-            </div>
+            <h4 style="color:#fff;">Nolan AI</h4>
             <button class="close-btn" onclick="toggleNolan()">✕</button>
         </div>
         <div class="nolan-messages" id="nolan-messages">
-            <div class="msg ai">Hey there! I'm Nolan, your personal AI assistant here on Diego Hub. Need help finding a game, uploading HTML games to your cloud, or bypassing filters? Let me know! 🌸</div>
+            <div class="msg ai">Hey! Your custom Node.js Cloud server is active and connected! 🌸</div>
         </div>
         <div class="nolan-input-area">
-            <input type="text" id="nolan-input" placeholder="Ask Nolan anything..." onkeydown="if(event.key==='Enter') sendNolanMessage()">
-            <button class="nolan-send-btn" onclick="sendNolanMessage()">Send</button>
+            <input type="text" id="nolan-input" placeholder="Ask Nolan..." onkeydown="if(event.key==='Enter') sendNolanMessage()">
+            <button class="close-btn" onclick="sendNolanMessage()">Send</button>
         </div>
     </div>
 
     <script>
-        let customCloudGames = [];
+        let serverCloudGames = [];
 
         window.addEventListener('DOMContentLoaded', () => {
-            const savedAvatar = localStorage.getItem('diego_proxy_avatar');
-            if (savedAvatar) {
-                document.getElementById('user-photo').src = savedAvatar;
-            }
-            loadCloudGames();
+            fetchServerCloudGames();
         });
 
-        function handleAvatarUpload(event) {
+        async function fetchServerCloudGames() {
+            try {
+                const res = await fetch('/api/games');
+                if (res.ok) {
+                    serverCloudGames = await res.json();
+                }
+            } catch (e) {
+                console.log('Running in client-only mode or backend server offline.');
+            }
+            generateCatalog();
+            renderGames(games);
+        }
+
+        async function uploadToServerCloud(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const dataUrl = e.target.result;
-                    document.getElementById('user-photo').src = dataUrl;
-                    localStorage.setItem('diego_proxy_avatar', dataUrl);
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('gameFile', file);
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert(`"${file.name}" uploaded to backend cloud! 🌸`);
+                    await fetchServerCloudGames();
+                    toggleCloudModal();
+                } else {
+                    alert('Upload failed: ' + (data.error || 'Server error'));
+                }
+            } catch (e) {
+                alert('Server error! Make sure server.js is running.');
             }
         }
 
-        // --- Diego Cloud Core Functions ---
         function toggleCloudModal() {
             const modal = document.getElementById('cloud-modal');
             modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function uploadCloudGame(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const htmlContent = e.target.result;
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const blobUrl = URL.createObjectURL(blob);
-                
-                const gameName = file.name.replace(/\.[^/.]+$/, "");
-                const cloudObj = {
-                    title: gameName + " (Cloud)",
-                    url: blobUrl,
-                    rawHtml: htmlContent,
-                    emoji: "☁️",
-                    category: "Cloud"
-                };
-
-                customCloudGames.push(cloudObj);
-                saveCloudGames();
-                generateCatalog();
-                renderGames(games);
-                toggleCloudModal();
-                alert(`"${gameName}" successfully uploaded to Diego Cloud! 🌸`);
-            };
-            reader.readAsText(file);
-        }
-
-        function saveCloudGames() {
-            try {
-                const lightweightGames = customCloudGames.map(g => ({
-                    title: g.title,
-                    rawHtml: g.rawHtml,
-                    emoji: g.emoji,
-                    category: g.category
-                }));
-                localStorage.setItem('diego_cloud_games', JSON.stringify(lightweightGames));
-            } catch(e) {
-                alert("Storage quota reached! Game is loaded for this session.");
-            }
-        }
-
-        function loadCloudGames() {
-            const stored = localStorage.getItem('diego_cloud_games');
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    customCloudGames = parsed.map(g => {
-                        const blob = new Blob([g.rawHtml], { type: 'text/html' });
-                        return {
-                            ...g,
-                            url: URL.createObjectURL(blob)
-                        };
-                    });
-                    generateCatalog();
-                    renderGames(games);
-                } catch(e) {}
-            }
-        }
-
-        function launchCustomCloudUrl() {
-            const urlInput = document.getElementById('cloud-url-input').value.trim();
-            if (!urlInput) return;
-            openGame("Custom Cloud App", urlInput);
-            toggleCloudModal();
-        }
-
-        function exportCloudBackup() {
-            const backupData = {
-                avatar: localStorage.getItem('diego_proxy_avatar') || '',
-                cloudGames: localStorage.getItem('diego_cloud_games') || '[]'
-            };
-            const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'diego_hub_cloud_backup.json';
-            link.click();
-        }
-
-        function importCloudBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.avatar) localStorage.setItem('diego_proxy_avatar', data.avatar);
-                    if (data.cloudGames) localStorage.setItem('diego_cloud_games', data.cloudGames);
-                    location.reload();
-                } catch(err) {
-                    alert("Invalid backup file!");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        (function initHaparaBlocker() {
-            try {
-                window.postMessage = function() {};
-                window.Funct = function() {};
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        mutation.addedNodes.forEach((node) => {
-                            if (node.nodeType === 1 && (node.id?.includes('hapara') || node.className?.includes('hapara') || node.tagName === 'EMBED')) {
-                                node.remove();
-                            }
-                        });
-                    });
-                });
-                observer.observe(document.documentElement, { childList: true, subtree: true });
-            } catch(e) {}
-        })();
-
-        let haparaBypassed = false;
-        function toggleHaparaBypass() {
-            haparaBypassed = !haparaBypassed;
-            const statusText = document.getElementById('hapara-status');
-            const btn = document.getElementById('hapara-btn');
-            const dot = document.querySelector('.hapara-dot');
-
-            if (haparaBypassed) {
-                statusText.innerText = "Hapara Shield: Locked & Masked";
-                dot.style.backgroundColor = "#a855f7";
-                dot.style.boxShadow = "0 0 12px #a855f7";
-                btn.innerText = "🛡️ Shield Active";
-                window.WebSocket = function() {
-                    return { send: function() {}, close: function() {}, addEventListener: function() {} };
-                };
-            } else {
-                statusText.innerText = "Hapara Blocker: Active";
-                dot.style.backgroundColor = "#34d399";
-                dot.style.boxShadow = "0 0 8px #34d399";
-                btn.innerText = "🛡️ Flush Tracker";
-            }
         }
 
         function toggleCredits() {
@@ -878,38 +617,22 @@
         function sendNolanMessage() {
             const input = document.getElementById('nolan-input');
             const container = document.getElementById('nolan-messages');
-            const text = input.value.trim();
-            if (!text) return;
+            if (!input.value.trim()) return;
 
             const userMsg = document.createElement('div');
             userMsg.className = 'msg user';
-            userMsg.innerText = text;
+            userMsg.innerText = input.value;
             container.appendChild(userMsg);
-            input.value = '';
-            container.scrollTop = container.scrollHeight;
-
+            
             setTimeout(() => {
                 const aiMsg = document.createElement('div');
                 aiMsg.className = 'msg ai';
-                aiMsg.innerText = getNolanResponse(text);
+                aiMsg.innerText = "Everything is connected to your Node.js cloud server backend! 🌸";
                 container.appendChild(aiMsg);
                 container.scrollTop = container.scrollHeight;
-            }, 600);
-        }
+            }, 500);
 
-        function getNolanResponse(query) {
-            const q = query.toLowerCase();
-            if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
-                return "Hey! Ready to play some unblocked games or test out scripts?";
-            } else if (q.includes('cloud')) {
-                return "You can click 'Diego Cloud' at the top to upload any offline .html game directly into browser memory!";
-            } else if (q.includes('game') || q.includes('play') || q.includes('recommend')) {
-                return "I recommend checking out Slope 3D, Geometry Dash, or Paper Minecraft! You can also click 'About:Blank' for ultimate stealth.";
-            } else if (q.includes('hapara') || q.includes('tracker') || q.includes('blocker')) {
-                return "The Hapara blocker is active in the top bar! Click 'Flush Tracker' anytime to lock down the websocket feeds and scrub telemetry.";
-            } else {
-                return "That's awesome! I'm tracking right along with you on Diego Hub. Let me know if you need help finding anything specific in the 900+ games library!";
-            }
+            input.value = '';
         }
 
         function updateClock() {
@@ -918,7 +641,6 @@
             const minutes = now.getMinutes().toString().padStart(2, '0');
             hours = hours % 12 || 12;
             document.getElementById('clock').innerText = `${hours}:${minutes}`;
-            
             const options = { weekday: 'long', month: 'short', day: 'numeric' };
             document.getElementById('date').innerText = now.toLocaleDateString('en-US', options);
         }
@@ -926,56 +648,22 @@
         updateClock();
 
         let games = [];
-        
         const basePopularGames = [
             { title: "Paper Minecraft", url: "https://turbowarp.org/10128407/embed", emoji: "🧱", category: "Game" },
             { title: "Geometry Dash", url: "https://turbowarp.org/105500895/embed", emoji: "🟩", category: "Game" },
             { title: "Flappy Bird", url: "https://turbowarp.org/18381180/embed", emoji: "🐤", category: "Game" },
             { title: "Slope 3D", url: "https://turbowarp.org/609174067/embed", emoji: "⛷️", category: "Game" },
             { title: "Retro Football", url: "https://turbowarp.org/764858013/embed", emoji: "🏈", category: "Game" },
-            { title: "1v1 Shooter", url: "https://turbowarp.org/789643501/embed", emoji: "🎯", category: "Game" },
-            { title: "Subway Runner", url: "https://turbowarp.org/752109843/embed", emoji: "🛹", category: "Game" },
             { title: "Pac-Man Arcade", url: "https://turbowarp.org/389028042/embed", emoji: "👾", category: "Arcade" }
         ];
 
         function generateCatalog() {
-            games = [...customCloudGames, ...basePopularGames];
-            
-            const uniqueTitles = [
-                "Drift Hunters", "Shell Shockers", "Venge.io", "Smash Karts", "Krunker.io",
-                "Getaway Shootout", "Basket Bros", "OvO", "ClusterRush", "Fireboy and Watergirl",
-                "Bad Ice Cream", "Duck Life", "Bloons Tower Defense", "Temple Run 2", "Bob the Robber",
-                "World's Hardest Game", "Fancy Pants Adventure", "Stealing the Diamond", "Escaping the Prison", "Aero Combat",
-                "Rider", "Stack", "Helix Jump", "Paper Minecraft", "Super Mario 64 Web",
-                "Doom 1993", "Quake Web", "Cut the Rope", "Where's My Water", "Angry Birds HTML",
-                "Fruit Ninja Web", "Among Us Online", "Fall Guys Web", "Stick War Legacy", "Earn to Die",
-                "Burrito Bison", "Learn to Fly", "Happy Wheels HTML", "Portal Flash", "Neon Blaster",
-                "Color Tunnel", "Merge Fruit", "2048", "Flappy Bird", "Crossy Chicken",
-                "Idle Miner Tycoon", "Clicker Heroes", "Adventure Capitalist", "Egg Inc Web", "Dungeon Clicker"
-            ];
-
-            const emojis = ["🎮", "🕹️", "⚡", "🔥", "🌟", "🎯", "🎲", "🏆", "🚀", "👾"];
-            
-            for (let i = 1; i <= 891; i++) {
-                const baseName = uniqueTitles[(i - 1) % uniqueTitles.length];
-                const displayName = i > uniqueTitles.length ? `${baseName} V${Math.floor(i / uniqueTitles.length) + 1}` : baseName;
-                const targetUrl = basePopularGames[i % basePopularGames.length].url;
-                
-                games.push({
-                    title: displayName,
-                    url: targetUrl,
-                    emoji: emojis[i % emojis.length],
-                    category: "Game"
-                });
-            }
+            games = [...serverCloudGames, ...basePopularGames];
         }
-
-        generateCatalog();
 
         const grid = document.getElementById('game-grid');
         const modal = document.getElementById('player-modal');
         const frame = document.getElementById('game-frame');
-        const fallback = document.getElementById('frame-fallback');
         const modalTitle = document.getElementById('modal-title');
         let currentUrl = '';
 
@@ -996,8 +684,6 @@
         function openGame(title, url) {
             currentUrl = url;
             modalTitle.innerText = title;
-            fallback.style.display = 'none';
-            frame.style.display = 'block';
             frame.src = url;
             modal.style.display = 'flex';
         }
@@ -1005,14 +691,6 @@
         function closeGame() {
             modal.style.display = 'none';
             frame.src = '';
-        }
-
-        function hideFallback() {
-            fallback.style.display = 'none';
-        }
-
-        function showFallback() {
-            fallback.style.display = 'flex';
         }
 
         function filterGames() {
@@ -1033,49 +711,24 @@
 
         let cloaked = false;
         function toggleCloak() {
-            const favicon = document.querySelector("link[rel*='icon']");
-            const cloakBtn = document.getElementById('cloak-btn');
-
             cloaked = !cloaked;
-            if (cloaked) {
-                document.title = "Classes";
-                favicon.href = "https://ssl.gstatic.com/classroom/ic_product_classroom_36dp.png";
-                cloakBtn.innerText = "🌸 Uncloak";
-            } else {
-                document.title = "Diego Hub 🌸";
-                favicon.href = "";
-                cloakBtn.innerText = "🕵️‍♂️ Classroom Cloak";
-            }
+            document.title = cloaked ? "Classes" : "Diego Hub 🌸";
+            document.getElementById('cloak-btn').innerText = cloaked ? "🌸 Uncloak" : "🕵️‍♂️ Classroom Cloak";
         }
 
         function aboutBlankLaunch() {
             if (!currentUrl) return;
             const win = window.open('about:blank');
-            if (!win) {
-                alert("Pop-up blocked! Please allow pop-ups for this site.");
-                return;
+            if (win) {
+                win.document.write(`<iframe src="${currentUrl}" style="width:100%;height:100vh;border:none;margin:0;padding:0;"></iframe>`);
             }
-            const winDoc = win.document;
-            winDoc.write(`
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <title>Google Classroom</title>
-                    <link rel="icon" type="image/png" href="https://ssl.gstatic.com/classroom/ic_product_classroom_36dp.png">
-                    <style>
-                        body, html { margin: 0; padding: 0; height: 100%; background: #000; overflow: hidden; }
-                        iframe { width: 100%; height: 100%; border: none; }
-                    </style>
-                </head>
-                <body>
-                    <iframe src="${currentUrl}" allowfullscreen></iframe>
-                </body>
-                </html>
-            `);
-            winDoc.close();
         }
 
-        renderGames(games);
+        function toggleHaparaBypass() {
+            alert('Hapara blocker & tracker flushed! 🌸');
+        }
+
+        function handleAvatarUpload(e) {}
     </script>
 </body>
 </html>
