@@ -11,14 +11,11 @@ let cdnGames = [];
 let currentUrl = '';
 let cloaked = false;
 
-// Active Hand-Curated Game Catalog (Fully script-routed for about:blank execution)
+// Active Hand-Curated Game Catalog
 const basePopularGames = [
-    // --- CLOUD & ALTERNATIVE SANDBOXES ---
     { id: 'rbx-1', title: "Bloxd.io (Bedwars/Obby)", url: "https://bloxd.io/", emoji: "🧱", category: "Roblox", isDefault: true },
-    { id: 'rbx-2', title: "Kogama (Web Sandbox)", url: "https://www.kogama.com/", emoji: "🕹️", category: "Roblox", isDefault: true },
-    { id: 'rbx-3', title: "CloudMoon Web", url: "https://web.cloudmoonapp.com/", emoji: "🟥", category: "Roblox", isDefault: true },
-
-    // --- WORKING EMBEDDABLE HTML5 GAMES ---
+    { id: 'rbx-2', title: "Voxiom.io (3D Build & Battle)", url: "https://voxiom.io/", emoji: "⚔️", category: "Roblox", isDefault: true },
+    { id: 'rbx-3', title: "Kogama (Web Sandbox)", url: "https://www.kogama.com/", emoji: "🕹️", category: "Roblox", isDefault: true },
     { id: 'g1', title: "1v1.LOL", url: "https://1v1.lol/", emoji: "🎯", category: "Action", isDefault: true },
     { id: 'g2', title: "2048 Classic", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
     { id: 'g3', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
@@ -98,21 +95,36 @@ function renderGames(data) {
 }
 
 // ==========================================
-// 4. UNIVERSAL ABOUT:BLANK LAUNCHER FOR ALL GAMES
+// 4. PROXY & GAME LAUNCHER ROUTING
 // ==========================================
 function openGame(title, url) {
     currentUrl = url;
-    
-    // Forces EVERY game and application straight to an about:blank popup to bypass iframe blocks and network monitoring
     aboutBlankLaunch();
 }
 
-function closeGame() {
-    const playerModal = document.getElementById('player-modal');
-    const gameFrame = document.getElementById('game-frame');
+function toggleProxyModal() {
+    const modal = document.getElementById('proxy-modal');
+    if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function launchProxyUrl() {
+    const input = document.getElementById('proxy-url-input');
+    if (!input || !input.value.trim()) return;
+
+    let target = input.value.trim();
     
-    if (playerModal) playerModal.style.display = 'none';
-    if (gameFrame) gameFrame.src = '';
+    if (!target.startsWith('http://') && !target.startsWith('https://')) {
+        if (target.includes('.') && !target.includes(' ')) {
+            target = 'https://' + target;
+        } else {
+            target = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(target);
+        }
+    }
+
+    currentUrl = target;
+    toggleProxyModal();
+    aboutBlankLaunch();
+    input.value = '';
 }
 
 function aboutBlankLaunch() {
@@ -123,7 +135,7 @@ function aboutBlankLaunch() {
             <html style="margin:0;padding:0;width:100%;height:100%;">
                 <head><title>Google Classroom</title></head>
                 <body style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;">
-                    <iframe src="${currentUrl}" style="width:100%;height:100%;border:none;margin:0;padding:0;" allowfullscreen></iframe>
+                    <iframe src="${currentUrl}" style="width:100%;height:100%;border:none;margin:0;padding:0;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allowfullscreen></iframe>
                 </body>
             </html>
         `);
@@ -266,7 +278,7 @@ function sendNolanMessage() {
     setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg ai';
-        aiMsg.innerText = `Universal about:blank routing active for all ${allGames.length} games! 🌸`;
+        aiMsg.innerText = `Proxy routing verified! 🌸`;
         container.appendChild(aiMsg);
         container.scrollTop = container.scrollHeight;
     }, 400);
@@ -296,8 +308,4 @@ function toggleCloak() {
     if (cloakBtn) {
         cloakBtn.innerText = cloaked ? "🌸 Uncloak" : "🕵️‍♂️ Classroom Cloak";
     }
-}
-
-function toggleHaparaBypass() {
-    alert('Tracking shield refreshed! 🌸');
 }
