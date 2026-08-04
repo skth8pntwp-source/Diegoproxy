@@ -5,46 +5,53 @@ const STORE_NAME = 'custom_games';
 let db = null;
 
 let customGames = [];
+let cdnGames = [];
 
-// Base Hand-Curated Popular Games
+// Hand-Curated List of REAL Working HTML5 Games
 const basePopularGames = [
-    { id: 'real-1', title: "2048", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
-    { id: 'real-2', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
-    { id: 'real-3', title: "Flappy Bird", url: "https://ellisonleao.github.io/clumsy-bird/", emoji: "🐤", category: "Arcade", isDefault: true },
-    { id: 'real-4', title: "Pac-Man Classic", url: "https://macek.github.io/google_pacman/", emoji: "👾", category: "Arcade", isDefault: true },
-    { id: 'real-5', title: "Canvas Tetris", url: "https://dionyziz.github.io/canvas-tetris/", emoji: "🧱", category: "Puzzle", isDefault: true },
-    { id: 'real-6', title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Clicker", isDefault: true },
-    { id: 'real-7', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true },
-    { id: 'real-8', title: "1v1.LOL", url: "https://1v1.lol/", emoji: "🎯", category: "Action", isDefault: true },
-    { id: 'real-9', title: "Roblox Web", url: "https://www.roblox.com/", emoji: "🟥", category: "Action", isDefault: true },
-    { id: 'real-10', title: "Fortnite Cloud", url: "https://www.xbox.com/play/games/fortnite", emoji: "⚡", category: "Action", isDefault: true },
-    { id: 'real-11', title: "Paper.io 2", url: "https://paper-io.com/", emoji: "📜", category: "Action", isDefault: true },
-    { id: 'real-12', title: "Moto X3M", url: "https://motox3m.co/", emoji: "🏍️", category: "Sports", isDefault: true }
+    // --- CLASSICS & PUZZLE ---
+    { id: 'g1', title: "2048", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
+    { id: 'g2', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
+    { id: 'g3', title: "Flappy Bird", url: "https://ellisonleao.github.io/clumsy-bird/", emoji: "🐤", category: "Arcade", isDefault: true },
+    { id: 'g4', title: "Pac-Man Classic", url: "https://macek.github.io/google_pacman/", emoji: "👾", category: "Arcade", isDefault: true },
+    { id: 'g5', title: "Canvas Tetris", url: "https://dionyziz.github.io/canvas-tetris/", emoji: "🧱", category: "Puzzle", isDefault: true },
+    { id: 'g6', title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Clicker", isDefault: true },
+    { id: 'g7', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true },
+    { id: 'g8', title: "Doodle Jump", url: "https://html5.gamedistribution.com/rvvAS48/bb22d4f208c04ec4a02d416973347078/index.html", emoji: "🐸", category: "Arcade", isDefault: true },
+    { id: 'g9', title: "Cut the Rope", url: "https://html5.gamedistribution.com/rvvAS48/a25287d3536d4f6a908051779b5c3281/index.html", emoji: "🍬", category: "Puzzle", isDefault: true },
+    { id: 'g10', title: "Fruit Ninja", url: "https://html5.gamedistribution.com/rvvAS48/c50c0ef4ff30456aa6a2c286e082829b/index.html", emoji: "🍉", category: "Arcade", isDefault: true },
+
+    // --- ACTION & RUNNERS ---
+    { id: 'g11', title: "Paper.io 2", url: "https://paper-io.com/", emoji: "📜", category: "Action", isDefault: true },
+    { id: 'g12', title: "Crossy Road", url: "https://crossyroad.io/", emoji: "🐔", category: "Action", isDefault: true },
+    { id: 'g13', title: "Subway Surfers", url: "https://subwaysurfers.com/", emoji: "🏃", category: "Action", isDefault: true },
+    { id: 'g14', title: "Geometry Dash", url: "https://geometrydash.io/", emoji: "🟦", category: "Action", isDefault: true },
+    { id: 'g15', title: "Temple Run 2", url: "https://html5.gamedistribution.com/rvvAS48/591d5735cfef41b6a71cb0a81180eb78/index.html", emoji: "🗿", category: "Action", isDefault: true },
+    { id: 'g16', title: "Cluster Rush", url: "https://clusterrush.io/", emoji: "🚚", category: "Action", isDefault: true },
+    { id: 'g17', title: "Vex 6", url: "https://html5.gamedistribution.com/rvvAS48/9bc490dd9ec24f5a895c1c4f5263a2a6/index.html", emoji: "🏃", category: "Action", isDefault: true },
+    { id: 'g18', title: "Vex 7", url: "https://html5.gamedistribution.com/rvvAS48/6d22ffc32dbf4ef1960bd27fdd7459ef/index.html", emoji: "🤸", category: "Action", isDefault: true },
+
+    // --- SPORTS & RACING ---
+    { id: 'g19', title: "Moto X3M", url: "https://motox3m.co/", emoji: "🏍️", category: "Sports", isDefault: true },
+    { id: 'g20', title: "Moto X3M Winter", url: "https://html5.gamedistribution.com/rvvAS48/a2df4edaa38d4f049d5bfb9f1d072f87/index.html", emoji: "❄️", category: "Sports", isDefault: true },
+    { id: 'g21', title: "Moto X3M Pool Party", url: "https://html5.gamedistribution.com/rvvAS48/48d904b7849e493e82d56c80537be4d6/index.html", emoji: "🏊", category: "Sports", isDefault: true },
+    { id: 'g22', title: "Basket Random", url: "https://twoplayergames.org/game/basket-random", emoji: "🏀", category: "Sports", isDefault: true },
+    { id: 'g23', title: "Soccer Random", url: "https://twoplayergames.org/game/soccer-random", emoji: "⚽", category: "Sports", isDefault: true },
+    { id: 'g24', title: "Basketball Stars", url: "https://html5.gamedistribution.com/rvvAS48/8fb81e05d0e2417e88258525b68df9f2/index.html", emoji: "⛹️", category: "Sports", isDefault: true },
+    { id: 'g25', title: "Retro Bowl", url: "https://game316006.konggames.com/gamez/0031/6006/live/index.html", emoji: "🏈", category: "Sports", isDefault: true },
+    { id: 'g26', title: "Smash Karts", url: "https://smashkarts.io/", emoji: "🏎️", category: "Sports", isDefault: true },
+
+    // --- SIMULATION & STRATEGY ---
+    { id: 'g27', title: "BitLife Simulator", url: "https://bitlifeonline.com/", emoji: "🧬", category: "Simulation", isDefault: true },
+    { id: 'g28', title: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", emoji: "⛏️", category: "Simulation", isDefault: true },
+    { id: 'g29', title: "Bloons TD 4", url: "https://html5.gamedistribution.com/rvvAS48/d9c79f33fb854f3484f23e6702d1d0f5/index.html", emoji: "🎈", category: "Strategy", isDefault: true },
+
+    // --- EXTERNAL FRAME LAUNCHERS ---
+    { id: 'g30', title: "1v1.LOL", url: "https://1v1.lol/", emoji: "🎯", category: "Action", isDefault: true },
+    { id: 'g31', title: "Roblox Web", url: "https://www.roblox.com/", emoji: "🟥", category: "Action", isDefault: true },
+    { id: 'g32', title: "Fortnite Cloud", url: "https://www.xbox.com/play/games/fortnite", emoji: "⚡", category: "Action", isDefault: true }
 ];
 
-// Dynamically generated extended game catalog
-function generateExtendedCatalog() {
-    const categories = ["Arcade", "Puzzle", "Action", "Sports", "Retro", "Strategy", "Casual"];
-    const emojis = ["🎮", "🕹️", "⚡", "🔥", "🎯", "🚀", "🎲", "👾", "🏆", "🌟"];
-    const generated = [];
-
-    // Generates static mirrors for catalog volume
-    for (let i = 1; i <= 999; i++) {
-        const cat = categories[i % categories.length];
-        const emoji = emojis[i % emojis.length];
-        generated.push({
-            id: `gen-${i}`,
-            title: `Retro Arcade Vol. ${i}`,
-            url: `https://gabrielecirulli.github.io/2048/`, // Fallback lightweight HTML5 endpoint
-            emoji: emoji,
-            category: cat,
-            isDefault: true
-        });
-    }
-    return generated;
-}
-
-const extendedGames = generateExtendedCatalog();
 let allGames = [];
 
 // App Startup
@@ -55,12 +62,35 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
         await initIndexedDB();
         await loadSavedGames();
+        await loadRealCdnGames();
     } catch (err) {
         console.error('Initialization Note:', err);
     }
 
     refreshGameCatalog();
 });
+
+// Load Real External Game Catalog JSONs
+async function loadRealCdnGames() {
+    try {
+        const res = await fetch('https://cdn.jsdelivr.net/gh/gn-math/gn-math.github.io@main/config/games.json');
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                cdnGames = data.map((g, idx) => ({
+                    id: `cdn-${idx}`,
+                    title: g.name || g.title || `Game ${idx}`,
+                    url: g.url || g.link,
+                    emoji: "🎮",
+                    category: g.category || "Game",
+                    isDefault: true
+                })).filter(g => g.url && g.title);
+            }
+        }
+    } catch (e) {
+        console.warn("CDN fetch fallback engaged.");
+    }
+}
 
 // 1. IndexedDB Setup
 function initIndexedDB() {
@@ -168,7 +198,7 @@ async function deleteGame(event, gameId) {
 }
 
 function refreshGameCatalog() {
-    allGames = [...customGames, ...basePopularGames, ...extendedGames];
+    allGames = [...customGames, ...basePopularGames, ...cdnGames];
     renderGames(allGames);
 }
 
