@@ -1,89 +1,314 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.net.URI;
+// ==========================================
+// 1. CONFIGURATION & DATABASE SETUP
+// ==========================================
+const DB_NAME = 'DiegoProxyDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'custom_games';
+let db = null;
 
-public class DiegoProxyApp extends JFrame {
+let customGames = [];
+let cdnGames = [];
+let currentUrl = '';
+let cloaked = false;
 
-    private final String[][] games = {
-        {"Roblox (CloudMoon)", "https://web.cloudmoonapp.com/game/com.roblox.client/"},
-        {"Roblox Web Portal", "https://www.roblox.com/discover"},
-        {"Bloxd.io (Bedwars/Obby)", "https://bloxd.io/"},
-        {"Kogama (Web Roblox Remake)", "https://www.kogama.com/"},
-        {"Fortnite Cloud", "https://www.xbox.com/play/games/fortnite"},
-        {"1v1.LOL", "https://1v1.lol/"},
-        {"2048 Classic", "https://gabrielecirulli.github.io/2048/"},
-        {"Hextris", "https://hextris.github.io/hextris/"},
-        {"Flappy Bird", "https://ellisonleao.github.io/clumsy-bird/"},
-        {"Pac-Man Classic", "https://macek.github.io/google_pacman/"},
-        {"Canvas Tetris", "https://dionyziz.github.io/canvas-tetris/"},
-        {"Cookie Clicker", "https://orteil.dashnet.org/cookieclicker/"},
-        {"Browser Snake", "https://playsnake.org/"},
-        {"Paper Minecraft", "https://scratch.mit.edu/projects/10128407/embed"},
-        {"Geometry Dash (Scratch)", "https://scratch.mit.edu/projects/105500895/embed"}
+// Active Hand-Curated Game Catalog (Optimized for School Networks)
+const basePopularGames = [
+    // --- CLOUD & ALTERNATIVE SANDBOXES ---
+    { id: 'rbx-1', title: "Bloxd.io (Bedwars/Obby)", url: "https://bloxd.io/", emoji: "🧱", category: "Roblox", isDefault: true },
+    { id: 'rbx-2', title: "Kogama (Web Sandbox)", url: "https://www.kogama.com/", emoji: "🕹️", category: "Roblox", isDefault: true },
+    { id: 'rbx-3', title: "CloudMoon Web", url: "https://web.cloudmoonapp.com/", emoji: "🟥", category: "Roblox", isDefault: true },
+
+    // --- WORKING EMBEDDABLE HTML5 GAMES ---
+    { id: 'g1', title: "1v1.LOL", url: "https://1v1.lol/", emoji: "🎯", category: "Action", isDefault: true },
+    { id: 'g2', title: "2048 Classic", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
+    { id: 'g3', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
+    { id: 'g4', title: "Flappy Bird", url: "https://ellisonleao.github.io/clumsy-bird/", emoji: "🐤", category: "Arcade", isDefault: true },
+    { id: 'g5', title: "Pac-Man Classic", url: "https://macek.github.io/google_pacman/", emoji: "👾", category: "Arcade", isDefault: true },
+    { id: 'g6', title: "Canvas Tetris", url: "https://dionyziz.github.io/canvas-tetris/", emoji: "🧱", category: "Puzzle", isDefault: true },
+    { id: 'g7', title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Clicker", isDefault: true },
+    { id: 'g8', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true },
+    { id: 'g9', title: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", emoji: "⛏️", category: "Simulation", isDefault: true },
+    { id: 'g10', title: "Geometry Dash (Scratch)", url: "https://scratch.mit.edu/projects/105500895/embed", emoji: "🟦", category: "Action", isDefault: true }
+];
+
+let allGames = [];
+
+// ==========================================
+// 2. APP INITIALIZATION
+// ==========================================
+window.addEventListener('DOMContentLoaded', async () => {
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    try {
+        await initIndexedDB();
+        await loadSavedGames();
+    } catch (err) {
+        console.error('Initialization Note:', err);
+    }
+
+    refreshGameCatalog();
+});
+
+function initIndexedDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+            const database = e.target.result;
+            if (!database.objectStoreNames.contains(STORE_NAME)) {
+                database.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
+        request.onsuccess = (e) => { db = e.target.result; resolve(); };
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+// ==========================================
+// 3. CATALOG & RENDERING LOGIC
+// ==========================================
+function refreshGameCatalog() {
+    allGames = [...customGames, ...basePopularGames, ...cdnGames];
+    renderGames(allGames);
+}
+
+function renderGames(data) {
+    const grid = document.getElementById('game-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    data.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = () => openGame(game.title, game.url);
+        
+        let deleteBtnHTML = '';
+        if (!game.isDefault) {
+            deleteBtnHTML = `<button onclick="deleteGame(event, '${game.id}')" class="delete-btn">🗑️</button>`;
+        }
+
+        card.style.position = 'relative';
+        card.innerHTML = `
+            ${deleteBtnHTML}
+            <div class="card-thumb">${game.emoji || '🎮'}</div>
+            <div class="card-title">${game.title}</div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// ==========================================
+// 4. GAME LAUNCHER & PLAYER MODAL
+// ==========================================
+function openGame(title, url) {
+    currentUrl = url;
+    
+    // Automatically force sandbox games straight to about:blank to bypass network filters
+    if (url.includes('bloxd.io') || url.includes('kogama.com') || url.includes('cloudmoonapp.com') || url.includes('1v1.lol')) {
+        aboutBlankLaunch();
+        return;
+    }
+
+    const modalTitle = document.getElementById('modal-title');
+    const gameFrame = document.getElementById('game-frame');
+    const playerModal = document.getElementById('player-modal');
+
+    if (modalTitle) modalTitle.innerText = title;
+    if (gameFrame) gameFrame.src = url;
+    if (playerModal) playerModal.style.display = 'flex';
+}
+
+function closeGame() {
+    const playerModal = document.getElementById('player-modal');
+    const gameFrame = document.getElementById('game-frame');
+    
+    if (playerModal) playerModal.style.display = 'none';
+    if (gameFrame) gameFrame.src = '';
+}
+
+function aboutBlankLaunch() {
+    if (!currentUrl) return;
+    const win = window.open('about:blank');
+    if (win) {
+        win.document.write(`
+            <html style="margin:0;padding:0;width:100%;height:100%;">
+                <head><title>Google Classroom</title></head>
+                <body style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;">
+                    <iframe src="${currentUrl}" style="width:100%;height:100%;border:none;margin:0;padding:0;" allowfullscreen></iframe>
+                </body>
+            </html>
+        `);
+    }
+}
+
+// ==========================================
+// 5. CUSTOM STORAGE (INDEXEDDB FILE UPLOAD)
+// ==========================================
+function loadSavedGames() {
+    return new Promise((resolve, reject) => {
+        if (!db) return resolve();
+        const transaction = db.transaction([STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+            const savedItems = request.result || [];
+            customGames = savedItems.map(item => {
+                const blob = new Blob([item.content], { type: 'text/html' });
+                return {
+                    id: item.id,
+                    title: item.title,
+                    url: URL.createObjectURL(blob),
+                    emoji: item.emoji || "☁️",
+                    category: "Custom",
+                    isDefault: false
+                };
+            });
+            resolve();
+        };
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+function handleBrowserFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+        alert('Please upload a valid .html file! 🌸');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function (e) {
+        const htmlContent = e.target.result;
+        const gameId = 'game_' + Date.now();
+        const gameName = file.name.replace(/\.[^/.]+$/, "") + " (Saved)";
+
+        const gameRecord = {
+            id: gameId,
+            title: gameName,
+            content: htmlContent,
+            emoji: "☁️",
+            timestamp: Date.now()
+        };
+
+        const transaction = db.transaction([STORE_NAME], 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        store.put(gameRecord);
+
+        transaction.oncomplete = () => {
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            customGames.unshift({
+                id: gameId,
+                title: gameName,
+                url: URL.createObjectURL(blob),
+                emoji: "☁️",
+                category: "Custom",
+                isDefault: false
+            });
+
+            refreshGameCatalog();
+            toggleCloudModal();
+            alert(`"${file.name}" saved permanently! 🌸`);
+        };
     };
 
-    public DiegoProxyApp() {
-        setTitle("Diego Proxy 🌸 - Desktop Launcher");
-        setSize(800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+    reader.readAsText(file);
+}
 
-        // Dark Theme Colors
-        Color bgColor = new Color(15, 23, 42);
-        Color cardBg = new Color(30, 41, 59);
-        Color accentColor = new Color(236, 72, 153);
+async function deleteGame(event, gameId) {
+    event.stopPropagation();
+    if (!confirm("Delete this saved game?")) return;
 
-        getContentPane().setBackground(bgColor);
-        setLayout(new BorderLayout(10, 10));
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    store.delete(gameId);
 
-        // Header Panel
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(cardBg);
-        JLabel titleLabel = new JLabel("Diego Proxy 🌸 Desktop Launcher");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        titleLabel.setForeground(accentColor);
-        headerPanel.add(titleLabel);
-        add(headerPanel, BorderLayout.NORTH);
+    transaction.oncomplete = () => {
+        customGames = customGames.filter(g => g.id !== gameId);
+        refreshGameCatalog();
+    };
+}
 
-        // Grid Panel for Games
-        JPanel gridPanel = new JPanel(new GridLayout(0, 3, 10, 10));
-        gridPanel.setBackground(bgColor);
-        gridPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+// ==========================================
+// 6. FILTERS & SEARCH
+// ==========================================
+function filterGames() {
+    const query = document.getElementById('search').value.toLowerCase();
+    const filtered = allGames.filter(g => g.title.toLowerCase().includes(query));
+    renderGames(filtered);
+}
 
-        for (String[] game : games) {
-            JButton btn = new JButton(game[0]);
-            btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-            btn.setBackground(cardBg);
-            btn.setForeground(Color.WHITE);
-            btn.setFocusPainted(false);
-            btn.setBorder(BorderFactory.createLineBorder(accentColor, 1));
-            
-            btn.addActionListener((ActionEvent e) -> openWebpage(game[1]));
-            gridPanel.add(btn);
-        }
+function filterCategory(cat) {
+    const filtered = allGames.filter(g => g.category === cat || g.title.toLowerCase().includes(cat.toLowerCase()));
+    renderGames(filtered);
+}
 
-        JScrollPane scrollPane = new JScrollPane(gridPanel);
-        scrollPane.setBorder(null);
-        add(scrollPane, BorderLayout.CENTER);
+function resetSearch() {
+    const searchInput = document.getElementById('search');
+    if (searchInput) searchInput.value = '';
+    renderGames(allGames);
+}
+
+// ==========================================
+// 7. UI CONTROLS & MODALS
+// ==========================================
+function toggleCloudModal() {
+    const modal = document.getElementById('cloud-modal');
+    if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function toggleNolan() {
+    const modal = document.getElementById('nolan-modal');
+    if (modal) modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+}
+
+function sendNolanMessage() {
+    const input = document.getElementById('nolan-input');
+    const container = document.getElementById('nolan-messages');
+    if (!input || !input.value.trim() || !container) return;
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.innerText = input.value;
+    container.appendChild(userMsg);
+    
+    setTimeout(() => {
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'msg ai';
+        aiMsg.innerText = `System online: ${allGames.length} active configurations loaded. 🌸`;
+        container.appendChild(aiMsg);
+        container.scrollTop = container.scrollHeight;
+    }, 400);
+
+    input.value = '';
+}
+
+function updateClock() {
+    const clockEl = document.getElementById('clock');
+    const dateEl = document.getElementById('date');
+    if (!clockEl || !dateEl) return;
+
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    hours = hours % 12 || 12;
+    clockEl.innerText = `${hours}:${minutes}`;
+    
+    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+    dateEl.innerText = now.toLocaleDateString('en-US', options);
+}
+
+function toggleCloak() {
+    cloaked = !cloaked;
+    document.title = cloaked ? "Google Classroom" : "Google Classroom 🌸";
+    const cloakBtn = document.getElementById('cloak-btn');
+    if (cloakBtn) {
+        cloakBtn.innerText = cloaked ? "🌸 Uncloak" : "🕵️‍♂️ Classroom Cloak";
     }
+}
 
-    private void openWebpage(String urlString) {
-        try {
-            if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSER)) {
-                Desktop.getDesktop().browse(new URI(urlString));
-            } else {
-                JOptionPane.showMessageDialog(this, "Opening URL: " + urlString);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            DiegoProxyApp app = new DiegoProxyApp();
-            app.setVisible(true);
-        });
-    }
+function toggleHaparaBypass() {
+    alert('Extension state check completed! 🌸');
 }
