@@ -558,13 +558,13 @@
     <div class="hero">
         <div class="clock-container" id="clock">9:11</div>
         <div class="date-text" id="date">Thursday, May 28</div>
-        <div class="brand-title">Diego Proxy 🌸</div>
+        <div class="brand-title">Diego Hub 🌸</div>
         <div class="tags-row">
             <span>⚡ Private</span> • <span>🔓 Unblocked</span> • <span>🛡️ Anti-Hapara</span>
         </div>
 
         <div class="search-box-wrapper">
-            <input type="text" id="search" placeholder="Search 900+ popular games & Roblox apps..." onkeyup="filterGames()">
+            <input type="text" id="search" placeholder="Search popular games & Roblox apps..." onkeyup="filterGames()">
         </div>
 
         <div class="dock-bar">
@@ -614,7 +614,7 @@
                 <p>This frame source is protected or restricted. Click below to launch it safely in an isolated sandbox tab.</p>
                 <button class="close-btn" onclick="aboutBlankLaunch()" style="padding: 10px 20px;">Launch Sandbox Mode ↗</button>
             </div>
-            <iframe id="game-frame" src="" allowfullscreen onload="hideFallback()" onerror="showFallback()"></iframe>
+            <iframe id="game-frame" src="" allowfullscreen allow="autoplay; gamepad; microphone; focus-without-user-activation" onerror="showFallback()"></iframe>
         </div>
     </div>
 
@@ -631,7 +631,7 @@
             <button class="close-btn" onclick="toggleNolan()">✕</button>
         </div>
         <div class="nolan-messages" id="nolan-messages">
-            <div class="msg ai">Hey there! I'm Nolan, your personal AI assistant here on Diego Proxy. Need help finding a game, checking out scripts, or bypassing filters? Let me know! 🌸</div>
+            <div class="msg ai">Hey there! I'm Nolan, your personal AI assistant here on Diego Hub. Need help finding a game, checking out scripts, or bypassing filters? Let me know! 🌸</div>
         </div>
         <div class="nolan-input-area">
             <input type="text" id="nolan-input" placeholder="Ask Nolan anything..." onkeydown="if(event.key==='Enter') sendNolanMessage()">
@@ -640,7 +640,6 @@
     </div>
 
     <script>
-        // Load saved photo if uploaded
         window.addEventListener('DOMContentLoaded', () => {
             const savedAvatar = localStorage.getItem('diego_proxy_avatar');
             if (savedAvatar) {
@@ -738,13 +737,13 @@
             if (q.includes('hello') || q.includes('hi') || q.includes('hey')) {
                 return "Hey! Ready to play some unblocked games or test out scripts?";
             } else if (q.includes('game') || q.includes('play') || q.includes('recommend')) {
-                return "I recommend checking out Slope, Retro Bowl, or 1v1.LOL from the top library list! You can also click 'About:Blank' for ultimate stealth.";
+                return "I recommend checking out Slope, 2048, or Google Pac-Man! You can also click 'About:Blank' for ultimate stealth.";
             } else if (q.includes('hapara') || q.includes('tracker') || q.includes('blocker')) {
                 return "The Hapara blocker is active in the top bar! Click 'Flush Tracker' anytime to lock down the websocket feeds and scrub telemetry.";
             } else if (q.includes('roblox') || q.includes('script') || q.includes('mm2')) {
-                return "Diego Proxy has got you covered with custom web ports and sandbox emulators right here in the grid. Happy gaming! 🌸";
+                return "Diego Hub has got you covered with custom web ports and sandbox emulators right here in the grid. Happy gaming! 🌸";
             } else {
-                return "That's awesome! I'm tracking right along with you on Diego Proxy. Let me know if you need help finding anything specific in the 900+ games library!";
+                return "That's awesome! I'm tracking right along with you on Diego Hub. Let me know if you need help finding anything specific in the 900+ games library!";
             }
         }
 
@@ -763,16 +762,16 @@
 
         let games = [];
         
+        // Updated working HTML5 embeds & active Scratch IDs
         const basePopularGames = [
-            { title: "Roblox Sandbox Port", url: "https://scratch.mit.edu/projects/714484084/embed", emoji: "🟥", category: "Game" },
-            { title: "Slope Unblocked", url: "https://scratch.mit.edu/projects/609174067/embed", emoji: "⛷️", category: "Game" },
-            { title: "Retro Bowl HTML", url: "https://scratch.mit.edu/projects/764858013/embed", emoji: "🏈", category: "Game" },
-            { title: "1v1.LOL Web", url: "https://scratch.mit.edu/projects/789643501/embed", emoji: "🎯", category: "Game" },
-            { title: "Subway Surfers", url: "https://scratch.mit.edu/projects/752109843/embed", emoji: "🛹", category: "Game" },
-            { title: "Geometry Dash", url: "https://scratch.mit.edu/projects/23642055/embed", emoji: "🟩", category: "Game" },
+            { title: "2048 Game", url: "https://2048game.com/", emoji: "🔢", category: "Game" },
+            { title: "Pac-Man Arcade", url: "https://www.google.com/logos/2010/pacman10-i.html", emoji: "👾", category: "Arcade" },
             { title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Tool" },
-            { title: "Pac-Man", url: "https://www.google.com/logos/2010/pacman10-i.html", emoji: "👾", category: "Arcade" },
-            { title: "Snake Arcade", url: "https://www.google.com/fbx?fbx=snake_arcade", emoji: "🐍", category: "Arcade" }
+            { title: "Snake Arcade", url: "https://www.google.com/fbx?fbx=snake_arcade", emoji: "🐍", category: "Arcade" },
+            { title: "Paper Minecraft", url: "https://scratch.mit.edu/projects/10128407/embed", emoji: "🧱", category: "Game" },
+            { title: "Geometry Dash Port", url: "https://scratch.mit.edu/projects/105500895/embed", emoji: "🟩", category: "Game" },
+            { title: "Super Mario HTML", url: "https://scratch.mit.edu/projects/16382101/embed", emoji: "🍄", category: "Game" },
+            { title: "Flappy Bird Web", url: "https://scratch.mit.edu/projects/18381180/embed", emoji: "🐤", category: "Game" }
         ];
 
         function generateCatalog() {
@@ -879,7 +878,7 @@
                 favicon.href = "https://ssl.gstatic.com/classroom/ic_product_classroom_36dp.png";
                 cloakBtn.innerText = "🌸 Uncloak";
             } else {
-                document.title = "Diego Proxy 🌸";
+                document.title = "Diego Hub 🌸";
                 favicon.href = "";
                 cloakBtn.innerText = "🕵️‍♂️ Classroom Cloak";
             }
