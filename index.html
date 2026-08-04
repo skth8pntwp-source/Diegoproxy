@@ -4,103 +4,368 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Classroom 🌸</title>
-    <link rel="icon" type="image/png" href="https://ssl.gstatic.com/classroom/ic_product_classroom_36dp.png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="https://ssl.gstatic.com/classroom/favicon.png">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #ec4899;
+            --accent-hover: #db2777;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Bar */
+        header {
+            background-color: #1e293b;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent-color);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-group h1 {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .clock-container {
+            text-align: right;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        .clock-container #clock {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* Controls & Filters Bar */
+        .controls {
+            padding: 1.5rem 2rem 0.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: #fff;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background-color: #334155;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+
+        /* Category Chips */
+        .categories {
+            padding: 0.5rem 2rem 1rem;
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .chip {
+            background-color: #1e293b;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+            border: 1px solid #334155;
+        }
+
+        .chip:hover {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+        }
+
+        /* Game Grid Container */
+        .grid-container {
+            padding: 1rem 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.25rem;
+            flex: 1;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(236, 72, 153, 0.2);
+            border-color: var(--accent-color);
+        }
+
+        .card-thumb {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(239, 68, 68, 0.8);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        /* Modal Overlay Window */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            width: 90%;
+            height: 90%;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--accent-color);
+        }
+
+        .modal-header {
+            padding: 1rem;
+            background-color: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            flex: 1;
+            background-color: #000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Dialog Modals */
+        .dialog-box {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid var(--accent-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-messages {
+            height: 200px;
+            background-color: #0f172a;
+            border-radius: 8px;
+            padding: 0.75rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .msg {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            max-width: 80%;
+            font-size: 0.85rem;
+        }
+
+        .msg.user {
+            background-color: var(--accent-color);
+            align-self: flex-end;
+        }
+
+        .msg.ai {
+            background-color: #334155;
+            align-self: flex-start;
+        }
+    </style>
 </head>
 <body>
 
+    <!-- Header Navigation -->
     <header>
-        <div class="hapara-badge">
-            <div class="hapara-dot"></div>
-            <span id="hapara-status">Hapara Blocker: Active</span>
+        <div class="logo-group">
+            <h1>Diego Proxy 🌸</h1>
         </div>
-        <div class="stealth-btn-group">
-            <button class="stealth-btn" onclick="toggleCloudModal()">☁️ Upload Game</button>
-            <button class="stealth-btn" onclick="toggleCredits()">🌸 Credits</button>
-            <button class="stealth-btn" onclick="toggleHaparaBypass()" id="hapara-btn">🛡️ Flush Tracker</button>
-            <button class="stealth-btn" onclick="toggleCloak()" id="cloak-btn">🕵️‍♂️ Classroom Cloak</button>
+        <div>
+            <button id="cloak-btn" class="btn btn-secondary" onclick="toggleCloak()">🕵️‍♂️ Classroom Cloak</button>
+            <button class="btn btn-secondary" onclick="toggleHaparaBypass()">⚡ Flush Tracker</button>
+            <button class="btn btn-secondary" onclick="toggleCloudModal()">☁️ Upload HTML</button>
+            <button class="btn" onclick="toggleNolan()">💬 AI Assistant</button>
+        </div>
+        <div class="clock-container">
+            <div id="clock">12:00</div>
+            <div id="date">Loading...</div>
         </div>
     </header>
 
-    <div class="hero">
-        <div class="clock-container" id="clock">12:00</div>
-        <div class="date-text" id="date">Loading...</div>
-        <div class="brand-title">Diego Proxy 🌸</div>
-        <div class="tags-row">
-            <span>⚡ Real HTML5 Games</span> • <span>☁️ IndexedDB Storage</span> • <span>🛡️ Anti-Hapara</span>
-        </div>
-
-        <div class="search-box-wrapper">
-            <input type="text" id="search" placeholder="Search 900+ games & custom uploads..." onkeyup="filterGames()">
-        </div>
-
-        <div class="dock-bar">
-            <div class="dock-icon" title="My Saved Games" onclick="filterCategory('Custom')">☁️</div>
-            <div class="dock-icon" title="Puzzle Games" onclick="filterCategory('Puzzle')">🧩</div>
-            <div class="dock-icon" title="Arcade Games" onclick="filterCategory('Arcade')">👾</div>
-            <div class="dock-icon" title="Action & Racing" onclick="filterCategory('Action')">⚡</div>
-            <div class="dock-icon" title="Show All" onclick="resetSearch()">✨</div>
+    <!-- Controls Bar -->
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="search" placeholder="Search unblocked games..." onkeyup="filterGames()">
+            <button class="btn btn-secondary" onclick="resetSearch()">Clear</button>
         </div>
     </div>
 
-    <main>
-        <div class="grid-heading">🔥 Game Catalog & Custom Uploads</div>
-        <div class="grid" id="game-grid"></div>
-    </main>
+    <!-- Category Filters -->
+    <div class="categories">
+        <div class="chip" onclick="resetSearch()">All Games</div>
+        <div class="chip" onclick="filterCategory('Roblox')">🟥 Roblox</div>
+        <div class="chip" onclick="filterCategory('Action')">🎯 Action</div>
+        <div class="chip" onclick="filterCategory('Arcade')">🕹️ Arcade</div>
+        <div class="chip" onclick="filterCategory('Sports')">🏀 Sports</div>
+        <div class="chip" onclick="filterCategory('Puzzle')">🧩 Puzzle</div>
+        <div class="chip" onclick="filterCategory('Simulation')">⛏️ Simulation</div>
+        <div class="chip" onclick="filterCategory('Custom')">☁️ Saved Uploads</div>
+    </div>
 
-    <!-- Upload Modal -->
-    <div id="cloud-modal">
-        <div class="modal-card-content">
-            <h2>Diego Proxy Storage ☁️🌸</h2>
-            <p>Upload HTML games directly to your browser storage (saved permanently).</p>
-            
-            <div class="cloud-box">
-                <label>Upload HTML Game File</label>
-                <input type="file" id="cloud-file-input" accept=".html,.htm" style="display: none;" onchange="handleBrowserFileUpload(event)">
-                <button class="stealth-btn" onclick="document.getElementById('cloud-file-input').click()" style="width: 100%;">📂 Choose .HTML File</button>
+    <!-- Main Game Grid -->
+    <div class="grid-container" id="game-grid">
+        <!-- Cards generated dynamically via script.js -->
+    </div>
+
+    <!-- Fullscreen Game Player Modal -->
+    <div class="modal" id="player-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Game Player</h3>
+                <div>
+                    <button class="btn btn-secondary" onclick="aboutBlankLaunch()">↗ Pop Out (about:blank)</button>
+                    <button class="btn" onclick="closeGame()">✖ Close</button>
+                </div>
             </div>
-
-            <button class="close-btn" onclick="toggleCloudModal()" style="padding: 10px 20px; width: 100%;">Close ✕</button>
-        </div>
-    </div>
-
-    <!-- Credits Modal -->
-    <div id="credits-modal">
-        <div class="modal-card-content">
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Diego" id="user-photo" class="credits-avatar" alt="Diego">
-            <h2>Created by Diego</h2>
-            <p>Welcome to Diego Proxy! Built with pure HTML5, CSS3, and IndexedDB storage. 100% real web games!</p>
-            <button class="close-btn" onclick="toggleCredits()" style="padding: 10px 20px; width: 100%;">Close ✕</button>
-        </div>
-    </div>
-
-    <!-- Game Player Modal -->
-    <div id="player-modal">
-        <div class="modal-header">
-            <h3 id="modal-title" style="color: var(--accent-color);">Game Title</h3>
-            <div class="modal-actions">
-                <button class="stealth-btn" onclick="aboutBlankLaunch()">About:Blank ↗</button>
-                <button class="close-btn" onclick="closeGame()">Close ✕</button>
+            <div class="modal-body">
+                <iframe id="game-frame" src="" allowfullscreen></iframe>
             </div>
         </div>
-        <div class="frame-container">
-            <iframe id="game-frame" src="" allowfullscreen allow="autoplay; gamepad; microphone; focus-without-user-activation"></iframe>
+    </div>
+
+    <!-- Upload HTML Game Modal -->
+    <div class="modal" id="cloud-modal">
+        <div class="dialog-box">
+            <h3>Upload Offline HTML Game</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8;">Select a single-file <code>.html</code> or <code>.htm</code> game saved on your device to store permanently in your browser.</p>
+            <input type="file" id="file-input" accept=".html,.htm" onchange="handleBrowserFileUpload(event)" style="display: none;">
+            <button class="btn" onclick="document.getElementById('file-input').click()">📁 Choose HTML File</button>
+            <button class="btn btn-secondary" onclick="toggleCloudModal()">Cancel</button>
         </div>
     </div>
 
-    <!-- Nolan AI Assistant Floating Launcher -->
-    <div class="nolan-launcher" onclick="toggleNolan()" title="Chat with Nolan AI">🤖</div>
-    <div id="nolan-modal">
-        <div class="nolan-header">
-            <h4 style="color:#fff;">Nolan AI</h4>
-            <button class="close-btn" onclick="toggleNolan()">✕</button>
-        </div>
-        <div class="nolan-messages" id="nolan-messages">
-            <div class="msg ai">Welcome to Diego Proxy! All games are 100% real HTML5 and saved directly to your browser! 🌸</div>
-        </div>
-        <div class="nolan-input-area">
-            <input type="text" id="nolan-input" placeholder="Ask Nolan..." onkeydown="if(event.key==='Enter') sendNolanMessage()">
-            <button class="close-btn" onclick="sendNolanMessage()">Send</button>
+    <!-- AI Chat Modal -->
+    <div class="modal" id="nolan-modal">
+        <div class="dialog-box">
+            <h3>Diego AI Chatbot 🌸</h3>
+            <div class="chat-messages" id="nolan-messages">
+                <div class="msg ai">Hello! Ask me anything or search your catalog! 🌸</div>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="nolan-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendNolanMessage()">
+                <button class="btn" onclick="sendNolanMessage()">Send</button>
+            </div>
+            <button class="btn btn-secondary" onclick="toggleNolan()">Close</button>
         </div>
     </div>
 
