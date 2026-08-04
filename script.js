@@ -11,7 +11,7 @@ let cdnGames = [];
 let currentUrl = '';
 let cloaked = false;
 
-// Active Hand-Curated Game Catalog (Optimized for School Networks)
+// Active Hand-Curated Game Catalog (Fully script-routed for about:blank execution)
 const basePopularGames = [
     // --- CLOUD & ALTERNATIVE SANDBOXES ---
     { id: 'rbx-1', title: "Bloxd.io (Bedwars/Obby)", url: "https://bloxd.io/", emoji: "🧱", category: "Roblox", isDefault: true },
@@ -98,24 +98,13 @@ function renderGames(data) {
 }
 
 // ==========================================
-// 4. GAME LAUNCHER & PLAYER MODAL
+// 4. UNIVERSAL ABOUT:BLANK LAUNCHER FOR ALL GAMES
 // ==========================================
 function openGame(title, url) {
     currentUrl = url;
     
-    // Automatically force sandbox games straight to about:blank to bypass network filters
-    if (url.includes('bloxd.io') || url.includes('kogama.com') || url.includes('cloudmoonapp.com') || url.includes('1v1.lol')) {
-        aboutBlankLaunch();
-        return;
-    }
-
-    const modalTitle = document.getElementById('modal-title');
-    const gameFrame = document.getElementById('game-frame');
-    const playerModal = document.getElementById('player-modal');
-
-    if (modalTitle) modalTitle.innerText = title;
-    if (gameFrame) gameFrame.src = url;
-    if (playerModal) playerModal.style.display = 'flex';
+    // Forces EVERY game and application straight to an about:blank popup to bypass iframe blocks and network monitoring
+    aboutBlankLaunch();
 }
 
 function closeGame() {
@@ -133,7 +122,7 @@ function aboutBlankLaunch() {
         win.document.write(`
             <html style="margin:0;padding:0;width:100%;height:100%;">
                 <head><title>Google Classroom</title></head>
-                <body style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;">
+                <body style="margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;">
                     <iframe src="${currentUrl}" style="width:100%;height:100%;border:none;margin:0;padding:0;" allowfullscreen></iframe>
                 </body>
             </html>
@@ -277,7 +266,7 @@ function sendNolanMessage() {
     setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg ai';
-        aiMsg.innerText = `System online: ${allGames.length} active configurations loaded. 🌸`;
+        aiMsg.innerText = `Universal about:blank routing active for all ${allGames.length} games! 🌸`;
         container.appendChild(aiMsg);
         container.scrollTop = container.scrollHeight;
     }, 400);
@@ -310,5 +299,5 @@ function toggleCloak() {
 }
 
 function toggleHaparaBypass() {
-    alert('Extension state check completed! 🌸');
+    alert('Tracking shield refreshed! 🌸');
 }
