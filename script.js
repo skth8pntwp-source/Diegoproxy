@@ -5,27 +5,27 @@ const STORE_NAME = 'custom_games';
 let db = null;
 
 let customGames = [];
-let fetchedGames = [];
+let CDN_GAMES = [];
 
-// 100% Real HTML5 / WebGL Native Games (No Scratch / TurboWarp)
+// Base unblocked HTML5 game catalog
 const basePopularGames = [
     { id: 'real-1', title: "2048", url: "https://gabrielecirulli.github.io/2048/", emoji: "🔢", category: "Puzzle", isDefault: true },
     { id: 'real-2', title: "Hextris", url: "https://hextris.github.io/hextris/", emoji: "🔷", category: "Arcade", isDefault: true },
     { id: 'real-3', title: "Flappy Bird HTML5", url: "https://ellisonleao.github.io/clumsy-bird/", emoji: "🐤", category: "Arcade", isDefault: true },
-    { id: 'real-4', title: "Pac-Man HTML5", url: "https://macek.github.io/google_pacman/", emoji: "👾", category: "Arcade", isDefault: true },
+    { id: 'real-4', title: "Pac-Man Classic", url: "https://macek.github.io/google_pacman/", emoji: "👾", category: "Arcade", isDefault: true },
     { id: 'real-5', title: "Canvas Tetris", url: "https://dionyziz.github.io/canvas-tetris/", emoji: "🧱", category: "Puzzle", isDefault: true },
-    { id: 'real-6', title: "Paper.io 2", url: "https://paper-io.com/", emoji: "📜", category: "Action", isDefault: true },
-    { id: 'real-7', title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Clicker", isDefault: true },
+    { id: 'real-6', title: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", emoji: "🍪", category: "Clicker", isDefault: true },
+    { id: 'real-7', title: "Paper.io 2", url: "https://paper-io.com/", emoji: "📜", category: "Action", isDefault: true },
     { id: 'real-8', title: "Slope 3D", url: "https://krunker.io/", emoji: "⛷️", category: "Action", isDefault: true },
-    { id: 'real-9', title: "Geometry Dash HTML5", url: "https://freegamesonline.github.io/geometry-dash/", emoji: "🟩", category: "Arcade", isDefault: true },
-    { id: 'real-10', title: "Moto X3M", url: "https://motox3m.co/", emoji: "🏍️", category: "Racing", isDefault: true },
-    { id: 'real-11', title: "Chess HTML5", url: "https://chessboardjs.com/", emoji: "♟️", category: "Strategy", isDefault: true },
-    { id: 'real-12', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true }
+    { id: 'real-9', title: "Browser Snake", url: "https://playsnake.org/", emoji: "🐍", category: "Classic", isDefault: true },
+    { id: 'real-10', title: "Retro Bowl", url: "https://game316006.konggames.com/gamez/0031/6006/live/index.html", emoji: "🏈", category: "Sports", isDefault: true },
+    { id: 'real-11', title: "BitLife Simulator", url: "https://bitlifeonline.com/", emoji: "🧬", category: "Simulation", isDefault: true },
+    { id: 'real-12', title: "Cluster Rush", url: "https://clusterrush.io/", emoji: "🚚", category: "Action", isDefault: true }
 ];
 
 let allGames = [];
 
-// Initialize App & Database on Load
+// App Startup
 window.addEventListener('DOMContentLoaded', async () => {
     updateClock();
     setInterval(updateClock, 1000);
@@ -33,40 +33,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
         await initIndexedDB();
         await loadSavedGames();
-        await fetchExternalGameCatalog(); // Pulls hundreds of real HTML5 games automatically
+        await loadMassiveGameCatalog();
     } catch (err) {
-        console.error('Initialization note:', err);
+        console.error('Initialization Note:', err);
     }
 
     refreshGameCatalog();
 });
 
-// 1. Initialize IndexedDB for Permanent Upload Storage
+// 1. IndexedDB Setup
 function initIndexedDB() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
-
         request.onupgradeneeded = (e) => {
             const database = e.target.result;
             if (!database.objectStoreNames.contains(STORE_NAME)) {
                 database.createObjectStore(STORE_NAME, { keyPath: 'id' });
             }
         };
-
-        request.onsuccess = (e) => {
-            db = e.target.result;
-            resolve();
-        };
-
+        request.onsuccess = (e) => { db = e.target.result; resolve(); };
         request.onerror = (e) => reject(e.target.error);
     });
 }
 
-// 2. Load Uploaded Games from Persistent Storage
+// 2. Load User Uploads
 function loadSavedGames() {
     return new Promise((resolve, reject) => {
         if (!db) return resolve();
-
         const transaction = db.transaction([STORE_NAME], 'readonly');
         const store = transaction.objectStore(STORE_NAME);
         const request = store.getAll();
@@ -86,35 +79,52 @@ function loadSavedGames() {
             });
             resolve();
         };
-
         request.onerror = (e) => reject(e.target.error);
     });
 }
 
-// 3. Dynamic External Game Catalog Fetcher (Pulls 500+ Real Games from Open CDNs)
-async function fetchExternalGameCatalog() {
-    try {
-        // Fetching real HTML5 open-source game lists from GitHub mirror repositories
-        const res = await fetch('https://cdn.jsdelivr.net/gh/gn-math/gn-math.github.io@main/config/games.json');
-        if (!res.ok) return;
+// 3. Fetch 900+ Open Source HTML5 Games from Unblocked CDNs
+async function loadMassiveGameCatalog() {
+    const mirrors = [
+        'https://cdn.jsdelivr.net/gh/gn-math/gn-math.github.io@main/config/games.json',
+        'https://raw.githubusercontent.com/3kh0/3kh0-assets/main/games.json',
+        'https://cdn.jsdelivr.net/gh/bubbls/m3th@main/games.json'
+    ];
 
-        const data = await res.json();
-        if (Array.isArray(data)) {
-            fetchedGames = data.map((g, index) => ({
-                id: `ext-${index}`,
-                title: g.name || g.title || `HTML5 Game ${index + 1}`,
-                url: g.url || g.link,
-                emoji: "🎮",
-                category: g.category || "Game",
-                isDefault: true
-            })).filter(g => g.url && !g.url.includes('turbowarp') && !g.url.includes('scratch'));
+    for (const mirror of mirrors) {
+        try {
+            const res = await fetch(mirror);
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    CDN_GAMES = data
+                        .filter(g => g.name || g.title)
+                        .map((g, idx) => {
+                            let gameUrl = g.url || g.link || g.file;
+                            if (gameUrl && !gameUrl.startsWith('http')) {
+                                gameUrl = `https://cdn.jsdelivr.net/gh/3kh0/3kh0-assets@main/${gameUrl.replace(/^\//, '')}`;
+                            }
+                            return {
+                                id: `cdn-${idx}`,
+                                title: g.name || g.title,
+                                url: gameUrl,
+                                emoji: "🎮",
+                                category: g.category || "Game",
+                                isDefault: true
+                            };
+                        })
+                        .filter(g => g.url && !g.url.includes('turbowarp') && !g.url.includes('scratch'));
+                    
+                    if (CDN_GAMES.length > 50) break; // Break loop once games are retrieved
+                }
+            }
+        } catch (e) {
+            console.warn('Attempting secondary CDN mirror...');
         }
-    } catch (e) {
-        console.log('Using built-in real HTML5 game catalog.');
     }
 }
 
-// 4. Save Custom Uploaded File Permanently
+// 4. Save User HTML Uploads Permanently
 function handleBrowserFileUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -162,10 +172,10 @@ function handleBrowserFileUpload(event) {
     reader.readAsText(file);
 }
 
-// 5. Delete Custom Game
+// 5. Delete Game
 async function deleteGame(event, gameId) {
     event.stopPropagation();
-    if (!confirm("Are you sure you want to delete this saved game?")) return;
+    if (!confirm("Delete this saved game?")) return;
 
     const transaction = db.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
@@ -178,7 +188,7 @@ async function deleteGame(event, gameId) {
 }
 
 function refreshGameCatalog() {
-    allGames = [...customGames, ...basePopularGames, ...fetchedGames];
+    allGames = [...customGames, ...basePopularGames, ...CDN_GAMES];
     renderGames(allGames);
 }
 
@@ -227,7 +237,7 @@ function filterGames() {
 }
 
 function filterCategory(cat) {
-    const filtered = allGames.filter(g => g.category === cat || g.title.includes(cat));
+    const filtered = allGames.filter(g => g.category === cat || g.title.toLowerCase().includes(cat.toLowerCase()));
     renderGames(filtered);
 }
 
@@ -264,10 +274,10 @@ function sendNolanMessage() {
     setTimeout(() => {
         const aiMsg = document.createElement('div');
         aiMsg.className = 'msg ai';
-        aiMsg.innerText = "All games are 100% real HTML5/WebGL games! No Scratch games allowed! 🌸";
+        aiMsg.innerText = `Loaded ${allGames.length} unblocked games! 🌸`;
         container.appendChild(aiMsg);
         container.scrollTop = container.scrollHeight;
-    }, 500);
+    }, 400);
 
     input.value = '';
 }
