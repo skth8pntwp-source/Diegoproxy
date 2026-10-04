@@ -3,87 +3,600 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Classroom 🌸</title>
-    <link rel="icon" href="https://ssl.gstatic.com/classroom/favicon.png">
-    <link rel="stylesheet" href="style.css">
+    <title>D26 OS</title>
+    <style>
+        :root {
+            --glass-bg: rgba(20, 20, 20, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #fff;
+            --text-muted: #aaa;
+            --highlight: #00ffcc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000;
+            color: var(--text-main);
+        }
+
+        /* --- Video Background --- */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: -1;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        /* --- Boot Sequence Styles --- */
+        #boot-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #win-logo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .win-square { background-color: #fff; width: 100%; height: 100%; }
+
+        #boot-text {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            text-align: left;
+            width: 100%;
+            display: none; 
+        }
+
+        #boot-logo-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        #boot-logo {
+            font-size: 150px;
+            color: #000;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 200;
+            letter-spacing: -5px;
+        }
+
+        /* Desktop Layout */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 50px);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 20px;
+        }
+
+        .desktop-icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 10px 5px;
+            transition: background 0.2s;
+        }
+
+        .desktop-icon:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .desktop-icon img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .desktop-icon span {
+            font-size: 12px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Center Widget */
+        .center-widget {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: var(--glass-bg);
+            padding: 20px 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            width: 400px;
+        }
+
+        .widget-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .widget-close:hover { color: #ff5f56; }
+
+        .center-widget h1 { font-size: 48px; font-weight: 300; margin-bottom: 5px; }
+        .center-widget p { color: var(--text-muted); font-size: 14px; margin-bottom: 15px; }
+
+        /* Window System */
+        .window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 900px;
+            height: 70%;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .window.active { display: flex; }
+
+        .window-header {
+            background: rgba(42, 42, 42, 0.8);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .window-controls span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+        .btn-close { background: #ff5f56; }
+        .btn-min { background: #ffbd2e; }
+        .btn-max { background: #27c93f; }
+
+        .window-content { padding: 20px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* Iframe Specific Window Overrides */
+        #iframe-window .window-content { padding: 0; }
+        #browser-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        /* Game Grid */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .game-card {
+            background: rgba(42, 42, 42, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            font-size: 11px;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            word-break: break-all;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
+            background: var(--highlight);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+        }
+
+        .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        .taskbar-icons { display: flex; gap: 10px; }
+        .taskbar-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .taskbar-icon:hover { background: rgba(255, 255, 255, 0.3); }
+    </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-group">
-            <h1>Diego Proxy 🌸</h1>
-        </div>
-        <div class="nav-buttons">
-            <button id="cloak-btn" class="btn btn-secondary" onclick="toggleCloak()">🕵️‍♂️ Classroom Cloak</button>
-            <button class="btn btn-secondary" onclick="toggleProxyModal()">🌐 Web Proxy</button>
-            <button class="btn btn-secondary" onclick="toggleCloudModal()">☁️ Upload HTML</button>
-            <button class="btn" onclick="toggleNolan()">💬 AI Assistant</button>
-        </div>
-        <div class="clock-container">
-            <div id="clock">12:00</div>
-            <div id="date">Loading...</div>
-        </div>
-    </header>
+    <!-- VIDEO BACKGROUND -->
+    <video autoplay loop muted playsinline id="bg-video">
+        <source src="https://raw.githubusercontent.com/skth8pntwp-source/Wallpaper/main/wallpaper.mp4" type="video/mp4">
+    </video>
 
-    <div class="controls">
-        <div class="search-box">
-            <input type="text" id="search" placeholder="Search unblocked games..." onkeyup="filterGames()">
-            <button class="btn btn-secondary" onclick="resetSearch()">Clear</button>
+    <!-- BOOT SEQUENCE OVERLAY -->
+    <div id="boot-screen">
+        <div id="win-logo">
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+        </div>
+        <div id="boot-text"></div>
+        <div id="boot-logo-container">
+            <h1 id="boot-logo">D</h1>
         </div>
     </div>
 
-    <div class="categories">
-        <div class="chip" onclick="resetSearch()">All Games</div>
-        <div class="chip" onclick="filterCategory('Roblox')">🟥 Roblox</div>
-        <div class="chip" onclick="filterCategory('Action')">🎯 Action</div>
-        <div class="chip" onclick="filterCategory('Arcade')">🕹️ Arcade</div>
-        <div class="chip" onclick="filterCategory('Sports')">🏀 Sports</div>
-        <div class="chip" onclick="filterCategory('Puzzle')">🧩 Puzzle</div>
-        <div class="chip" onclick="filterCategory('Simulation')">⛏️ Simulation</div>
-        <div class="chip" onclick="filterCategory('Custom')">☁️ Saved Uploads</div>
+    <!-- MAIN OS DESKTOP -->
+    <div id="desktop">
+        <div class="desktop-icon" onclick="openWindow('library-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%2300ffcc' viewBox='0 0 24 24'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>" alt="Library">
+            <span>D26 Library</span>
+        </div>
+        <!-- Toggle Widget Icon -->
+        <div class="desktop-icon" onclick="toggleWidget()">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23aaa' viewBox='0 0 24 24'><path d='M4 4h16v16H4V4zm-2 0a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm10 4v8h-4V8h4zm6 0v8h-4V8h4z'/></svg>" alt="Widget">
+            <span>Toggle Log</span>
+        </div>
+
+        <div class="center-widget" id="main-widget">
+            <span class="widget-close" onclick="toggleWidget()">✕</span>
+            <h1 id="clock">12:00 PM</h1>
+            <p>Battery API not supported.</p>
+            <h3>D26 Updates</h3>
+            <p style="margin-top: 10px;">Version 1.1<br>Iframe container integration active.</p>
+        </div>
     </div>
 
-    <div class="grid-container" id="game-grid"></div>
-
-    <!-- Web Proxy Input Modal -->
-    <div class="modal" id="proxy-modal" onclick="if(event.target === this) toggleProxyModal()">
-        <div class="dialog-box">
-            <h3>🌐 Encrypted Web Proxy</h3>
-            <p style="font-size: 0.85rem; color: #94a3b8;">Type any URL or web search query below to launch it safely inside an unblocked <code>about:blank</code> sandbox tab.</p>
-            <input type="text" id="proxy-url-input" placeholder="https://www.example.com or search..." onkeypress="if(event.key==='Enter') launchProxyUrl()">
-            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                <button class="btn btn-secondary" onclick="toggleProxyModal()">Cancel</button>
-                <button class="btn" onclick="launchProxyUrl()">Launch Proxy</button>
+    <!-- D26 Library Window -->
+    <div id="library-window" class="window">
+        <div class="window-header">
+            <span style="font-weight: bold;">Games & Proxies - D26</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('library-window')"></span>
+                <span class="btn-max"></span>
+                <span class="btn-close" onclick="closeWindow('library-window')"></span>
             </div>
         </div>
-    </div>
-
-    <!-- Upload HTML Game Modal -->
-    <div class="modal" id="cloud-modal" onclick="if(event.target === this) toggleCloudModal()">
-        <div class="dialog-box">
-            <h3>Upload Offline HTML Game</h3>
-            <p style="font-size: 0.85rem; color: #94a3b8;">Select a single-file <code>.html</code> or <code>.htm</code> game saved on your device.</p>
-            <input type="file" id="file-input" accept=".html,.htm" onchange="handleBrowserFileUpload(event)" style="display: none;">
-            <button class="btn" onclick="document.getElementById('file-input').click()">📁 Choose HTML File</button>
-            <button class="btn btn-secondary" onclick="toggleCloudModal()">Cancel</button>
+        <div class="window-content">
+            <div class="game-grid" id="link-container"></div>
         </div>
     </div>
 
-    <!-- AI Chat Modal -->
-    <div class="modal" id="nolan-modal" onclick="if(event.target === this) toggleNolan()">
-        <div class="dialog-box">
-            <h3>Diego AI Chatbot 🌸</h3>
-            <div style="height: 180px; background-color: #0f172a; border-radius: 8px; padding: 0.75rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;" id="nolan-messages">
-                <div style="background-color: #334155; padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.85rem;">Hello! Use the Web Proxy button to browse any site. 🌸</div>
+    <!-- Iframe Container Window -->
+    <div id="iframe-window" class="window" style="width: 85%; height: 80%;">
+        <div class="window-header">
+            <span id="iframe-title" style="font-weight: bold;">Browser View</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('iframe-window')"></span>
+                <span class="btn-max"></span>
+                <span class="btn-close" onclick="closeWindow('iframe-window')"></span>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <input type="text" id="nolan-input" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendNolanMessage()">
-                <button class="btn" onclick="sendNolanMessage()">Send</button>
-            </div>
-            <button class="btn btn-secondary" onclick="toggleNolan()">Close</button>
+        </div>
+        <div class="window-content">
+            <iframe id="browser-frame" src=""></iframe>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <div class="taskbar-left">
+            <span style="font-weight: bold; color: var(--highlight);">D26 OS</span>
+            <div class="taskbar-icons">
+                <div class="taskbar-icon" onclick="openWindow('library-window')">🎮</div>
+            </div>
+        </div>
+        <div class="taskbar-right">
+            <span id="fps-counter">FPS: 60</span>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Boot Sequence Logic ---
+        const bootCode = `struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
+struct group_info *groups_alloc(int gidsetsize){
+    struct group_info *group_info;
+    int`;
+
+        const winLogoEl = document.getElementById('win-logo');
+        const bootTextEl = document.getElementById('boot-text');
+        const bootLogoCont = document.getElementById('boot-logo-container');
+        const bootScreen = document.getElementById('boot-screen');
+        let typeIndex = 0;
+
+        function startBootSequence() {
+            setTimeout(() => {
+                winLogoEl.style.display = 'none';
+                bootTextEl.style.display = 'block';
+                typeBootCode();
+            }, 1500);
+        }
+
+        function typeBootCode() {
+            if (typeIndex < bootCode.length) {
+                bootTextEl.textContent += bootCode.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeBootCode, 15); 
+            } else {
+                setTimeout(showBootLogo, 600); 
+            }
+        }
+
+        function showBootLogo() {
+            bootTextEl.style.display = 'none'; 
+            bootLogoCont.style.opacity = '1';  
+            
+            setTimeout(() => {
+                bootLogoCont.style.opacity = '0'; 
+                setTimeout(() => {
+                    bootScreen.style.opacity = '0'; 
+                    setTimeout(() => {
+                        bootScreen.style.display = 'none'; 
+                    }, 800);
+                }, 500);
+            }, 1800); 
+        }
+
+        window.onload = startBootSequence;
+
+        // --- 2. Clock Logic ---
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').textContent = hours + ':' + minutes + ' ' + ampm;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // --- 3. Widget Toggle Logic ---
+        function toggleWidget() {
+            const widget = document.getElementById('main-widget');
+            widget.style.display = widget.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- 4. Window Management ---
+        function openWindow(id) { document.getElementById(id).classList.add('active'); }
+        function closeWindow(id) { 
+            document.getElementById(id).classList.remove('active');
+            if (id === 'iframe-window') {
+                document.getElementById('browser-frame').src = ''; // Clear iframe when closed
+            }
+        }
+
+        function launchInIframe(url, name) {
+            document.getElementById('iframe-title').textContent = name;
+            document.getElementById('browser-frame').src = url;
+            openWindow('iframe-window');
+        }
+
+        // --- 5. Populate Complete Link Library ---
+        const proxyLinks = [
+            "Calcsolver.net", "Calcsolver.com", "Mathcheck.net", "Solvecalc.net",
+            "https://calcsolverpro.com", "https://figurestand.workerlo.workers.dev",
+            "bit.ly/nexlinkfinder", "https://storage.googleapis.com/opiumbest/index.html",
+            "https://ghostproxy.anonymoose.workers.dev/", "https://nocturne.lol/",
+            "https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg", "https://galxy.it.com/",
+            "https://helium-on.top/", "https://duckmath.org/", "https://mizumath.com/",
+            "https://sites.google.com/view/d3ltahubgames/home", "https://t9-is-the-goat.netlify.app/class.html",
+            "https://d1xzx4vznne13n.cloudfront.net/", "https://studysync.co.uk",
+            "https://cdn.jsdelivr.net/gh/lolhahusuckxj/Chud/games.svg", "https://menist.free.nf/?i=1",
+            "Calc.cyclopsproject.eu", "https://sites.google.com/view/vecta-unblocked/-_1",
+            "https://pirettisports.com/", "https://algebra.khastat.org", "https://frogiesarcade.win",
+            "https://math.leaning.cfd", "https://docs.unblinternetuniversity.workers.dev",
+            "question.gorich.hk", "blue.monkey.majoitus.ee", "s3.amazonaws.com", "they.misem.or.id",
+            "https://bull.chanka.com", "https://class.ryanjlowe.us", "https://education.schoolcity.cc",
+            "https://catz.touchgrassnow.org/", "https://uraniumsite.t20988828.workers.dev/",
+            "https://c00lkiddtech.live/", "https://yukios.netlify.app/", "https://vps-d38e82a1.vps.ovh.us/",
+            "https://xylora.org/", "https://a21ae49a9f4a.surge.sh/index.svg", "https://petezahgames.com/",
+            "https://tt.bookworm.com.np", "https://brainworxedu.github.io/classes.html",
+            "space.colegioitalocomposto.cl", "https://fluxv3-sooty.vercel.app/", "https://endis.rest",
+            "https://ajhsvault.org", "https://endis.college", "https://practice.rest",
+            "https://monoxide.dev/", "https://veterans4education.org/", "https://donutshop.vip/",
+            "https://sealsarcade.xyz", "https://mathlearn.nya.je", "https://kahoot.undo.it",
+            "https://mathnotes.ne-t.org", "https://aphistory.ra3.us", "https://classroom.xn--ds-bja.info",
+            "https://schoology.clienturl.net", "https://lost.dstand.com.au", "https://ixl-learn.jakesthoughts.xyz",
+            "https://happylearn.port82.net", "https://science-courses.xn--72cg7bdd3bro6b3ab9c8btw4x.com",
+            "https://ixl.ldtp.com", "https://quizlet.lozan.com", "https://yo-scan-this.qr-code.co.za",
+            "https://canvas.instructure.rkfd.com", "https://1.2.3.tokes.ro", "https://mathresources.dx4.uk",
+            "https://banana.ctx.cl", "https://banana.ftp.sh", "https://banana.jakesthoughts.xyz",
+            "https://banana.privatedns.org", "https://banana.rkfd.com",
+            "https://educationate2026.s3.us-east-2.amazonaws.com/index.html",
+            "https://geometry-302267745.b-cdn.net/", "https://science-411069385.b-cdn.net/",
+            "https://science-861197723.b-cdn.net",
+            "https://raw.githubusercontent.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://quantil.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://originfastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://fastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://gcore.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://testingcf.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdelivr.us/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.b-cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.codeqihan.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.proxy.aks.moe/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdmirror.com/gh/seattleschools/media/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdmirror.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.cdn.zzko.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.onmicrosoft.cn/gh/seattleschools/media/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.onmicrosoft.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.nmmsl.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.duolaa.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.bili33.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.qaq.qa/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.aby.pub/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.topthink.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.yizex.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://code.webcache.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://raw.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.statically.io/gh/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.staticdelivr.com/gh/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdelivr.net.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd-proxy.ygxz.in/gh/seattleschools/media/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://raw.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://rawcdn.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://raw.githubusercontent.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://quantil.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://originfastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://fastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://gcore.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://testingcf.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdelivr.us/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.b-cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.codeqihan.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.proxy.aks.moe/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdmirror.com/gh/seattleschools/media/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdmirror.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.cdn.zzko.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.onmicrosoft.cn/gh/seattleschools/media/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.onmicrosoft.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.nmmsl.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.duolaa.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.bili33.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.qaq.qa/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.aby.pub/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.topthink.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.yizex.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://code.webcache.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://raw.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.statically.io/gh/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.staticdelivr.com/gh/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdelivr.net.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd-proxy.ygxz.in/gh/seattleschools/media/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://raw.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://rawcdn.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg"
+        ];
+
+        const container = document.getElementById('link-container');
+        
+        proxyLinks.forEach((link, index) => {
+            const card = document.createElement('div');
+            let href = link.trim();
+            if (!href.startsWith('http') && !href.startsWith('bit.ly') && !href.includes('://')) {
+                href = 'https://' + href;
+            } else if (href.startsWith('bit.ly')) {
+                href = 'https://' + href;
+            }
+            
+            card.className = "game-card";
+            
+            let displayName = link.replace('https://', '').replace('http://', '').split('/')[0];
+            if (displayName.includes('seattleschools') || displayName.includes('jsdelivr') || displayName.length > 22) {
+                displayName = "Proxy Node " + (index + 1);
+            }
+            card.textContent = displayName;
+            
+            // Open via iframe instead of new tab
+            card.onclick = () => {
+                launchInIframe(href, displayName);
+            };
+
+            container.appendChild(card);
+        });
+
+        // --- 6. Mock FPS Counter ---
+        setInterval(() => {
+            document.getElementById('fps-counter').textContent = 'FPS: ' + (Math.floor(Math.random() * (62 - 58 + 1)) + 58);
+        }, 1000);
+    </script>
 </body>
 </html>
