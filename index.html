@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diego26 OS</title>
+    <style>
+        :root {
+            --glass-bg: rgba(12, 12, 12, 0.88);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-main: #fff;
+            --text-muted: #aaa;
+            --highlight: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #0b0b0b;
+            color: var(--text-main);
+        }
+
+        /* --- Background Layouts --- */
+        #wave-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 30%, #151515 0%, #020202 90%);
+            pointer-events: none;
+        }
+
+        /* Exact Diego26 Nebula Layout Container */
+        #nebula-layout {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 5;
+            background: #0d0d0d;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(35, 35, 35, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(25, 25, 25, 0.5) 0%, transparent 60%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        .nebula-content-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 0 20px;
+            margin-top: -60px;
+        }
+
+        .nebula-logo {
+            font-size: 52px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #fff;
+            margin-bottom: 28px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .nebula-search-bar {
+            position: relative;
+            width: 100%;
+            background: rgba(25, 25, 25, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            padding: 14px 22px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            margin-bottom: 16px;
+            transition: border-color 0.2s;
+        }
+
+        .nebula-search-bar:hover, .nebula-search-bar:focus-within {
+            border-color: rgba(255, 255, 255, 0.35);
+        }
+
+        .nebula-search-bar svg {
+            width: 18px;
+            height: 18px;
+            fill: #888;
+            margin-right: 14px;
+        }
+
+        .nebula-search-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            user-select: text;
+        }
+
+        .nebula-add-bookmark {
+            color: #777;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: color 0.2s;
+        }
+
+        .nebula-add-bookmark:hover {
+            color: #fff;
+        }
+
+        /* Nebula Bottom Pill Dock */
+        .nebula-dock {
+            position: absolute;
+            bottom: 35px;
+            display: flex;
+            gap: 8px;
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .nebula-dock-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 16px;
+            color: #ccc;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+        }
+
+        .nebula-dock-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+
+        .nebula-dock-item svg {
+            width: 15px;
+            height: 15px;
+            fill: currentColor;
+        }
+
+        /* --- Boot Sequence Styles --- */
+        #boot-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #win-logo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .win-square { background-color: #fff; width: 100%; height: 100%; }
+
+        #boot-text {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            text-align: left;
+            width: 100%;
+            display: none; 
+        }
+
+        #boot-logo-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        #boot-logo {
+            font-size: 150px;
+            color: #000;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 200;
+            letter-spacing: -5px;
+        }
+
+        /* Desktop Layout */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 50px);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 20px;
+            z-index: 2;
+        }
+
+        .desktop-icon {
+            width: 82px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 10px 5px;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .desktop-icon:hover { 
+            background: rgba(255, 255, 255, 0.08); 
+            transform: translateY(-2px);
+        }
+
+        .desktop-icon img {
+            width: 44px;
+            height: 44px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            background: rgba(25, 25, 25, 0.7);
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 8px;
+        }
+
+        .desktop-icon span {
+            font-size: 11px;
+            color: #e0e0e0;
+            text-shadow: 1px 1px 3px #000;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Center Widget */
+        .center-widget {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: var(--glass-bg);
+            padding: 22px 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            width: 420px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+        }
+
+        .widget-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .widget-close:hover { color: #fff; }
+
+        .center-widget h1 { font-size: 44px; font-weight: 300; margin-bottom: 5px; color: #fff; }
+        .center-widget p { color: var(--text-muted); font-size: 13px; margin-bottom: 12px; }
+
+        /* --- Draggable & Resizable Window System --- */
+        .window {
+            position: absolute;
+            top: 12%;
+            left: 15%;
+            width: 820px;
+            height: 540px;
+            min-width: 320px;
+            min-height: 240px;
+            background: rgba(18, 18, 18, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.95);
+            overflow: hidden;
+            z-index: 1000;
+        }
+
+        .window.active { display: flex; }
+
+        .window-header {
+            background: rgba(30, 30, 30, 0.95);
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .window-header:active { cursor: grabbing; }
+
+        .window-controls span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+        .btn-close { background: #ff5f56; }
+        .btn-min { background: #ffbd2e; }
+        .btn-max { background: #27c93f; }
+
+        .window-content { 
+            padding: 20px; 
+            overflow-y: auto; 
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            position: relative;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 18px;
+            height: 18px;
+            cursor: nwse-resize;
+            z-index: 200;
+            background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.35) 50%);
+            border-bottom-right-radius: 12px;
+        }
+
+        .resize-handle:hover {
+            background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.85) 50%);
+        }
+
+        /* Iframe Specific Window Overrides */
+        #iframe-window .window-content { padding: 0; }
+        #browser-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        /* --- Browser App Styles --- */
+        #custom-browser-window .window-content {
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background: #181818;
+        }
+
+        .google-browser-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: #111;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .google-nav-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ddd;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .google-nav-btn:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+        .google-url-form {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            background: #242424;
+            border: 1px solid #444;
+            border-radius: 20px;
+            padding: 0 14px;
+            transition: border-color 0.2s;
+        }
+
+        .google-url-form:focus-within { border-color: #aaa; }
+
+        .google-search-badge {
+            font-size: 11px;
+            color: #ccc;
+            font-weight: bold;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+
+        #google-url-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            padding: 7px 0;
+            font-size: 13px;
+            outline: none;
+            user-select: text;
+        }
+
+        .google-proxy-btn {
+            background: #242424;
+            border: 1px solid #444;
+            color: #aaa;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .google-proxy-btn.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .google-browser-viewport {
+            position: relative;
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+            background: #181818;
+        }
+
+        #google-browser-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+            display: none;
+        }
+
+        #google-browser-home {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #181818;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .google-logo-text {
+            font-size: 64px;
+            font-weight: 500;
+            letter-spacing: -2px;
+            margin-bottom: 24px;
+            font-family: Arial, sans-serif;
+        }
+
+        .g-white { color: #ffffff; }
+        .g-gray { color: #888888; }
+        .g-light { color: #d0d0d0; }
+
+        .google-home-search-box {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 580px;
+            background: #242424;
+            border: 1px solid #444;
+            border-radius: 24px;
+            padding: 10px 18px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transition: border-color 0.2s;
+        }
+
+        .google-home-search-box:hover, .google-home-search-box:focus-within {
+            border-color: #fff;
+        }
+
+        #google-home-input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            padding: 4px 8px;
+            outline: none;
+            user-select: text;
+        }
+
+        .google-quick-shortcuts {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .google-shortcut-chip {
+            background: #282828;
+            border: 1px solid #383838;
+            padding: 8px 16px;
+            border-radius: 18px;
+            font-size: 13px;
+            color: #ccc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .google-shortcut-chip:hover {
+            border-color: #fff;
+            color: #fff;
+            background: #333;
+        }
+
+        #google-proxy-loader {
+            position: absolute;
+            inset: 0;
+            background: rgba(20, 20, 20, 0.92);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        /* Generic App Contents */
+        .app-inner-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            color: #ddd;
+            gap: 15px;
+        }
+
+        .app-toolbar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .app-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .app-btn:hover { background: rgba(255,255,255,0.2); }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 12px;
+        }
+        .file-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .file-item:hover { background: rgba(255,255,255,0.1); }
+
+        textarea.note-area {
+            width: 100%;
+            flex-grow: 1;
+            background: rgba(10,10,10,0.6);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            user-select: text;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 300px;
+        }
+        .calc-screen {
+            background: #000;
+            border: 1px solid #444;
+            padding: 12px;
+            font-size: 24px;
+            text-align: right;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        .calc-btn {
+            background: #333;
+            border: none;
+            color: #fff;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .calc-btn:hover { background: #444; }
+        .calc-btn.op { background: #555; }
+
+        /* Game Grid */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .game-card {
+            background: rgba(35, 35, 35, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            font-size: 11px;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            word-break: break-all;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
+            background: #fff;
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            z-index: 2000;
+        }
+
+        .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 15px; font-size: 13px; }
+        .taskbar-icons { display: flex; gap: 8px; }
+        .taskbar-icon {
+            width: 34px;
+            height: 34px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: background 0.2s;
+        }
+        .taskbar-icon:hover { background: rgba(255, 255, 255, 0.2); }
+        .taskbar-icon svg { width: 18px; height: 18px; fill: #fff; }
+    </style>
+</head>
+<body>
+
+    <!-- BACKGROUND LAYERS -->
+    <canvas id="wave-canvas"></canvas>
+
+    <!-- EXACT DIEGO26 NEBULA LAYOUT -->
+    <div id="nebula-layout">
+        <div class="nebula-content-center">
+            <h1 class="nebula-logo">Diego26</h1>
+            <div class="nebula-search-bar">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" class="nebula-search-input" placeholder="Search..." onkeydown="if(event.key==='Enter') navigateBrowser(this.value)">
+            </div>
+            <div class="nebula-add-bookmark" onclick="openWindow('library-window')">+ Add Bookmark</div>
+        </div>
+
+        <div class="nebula-dock">
+            <div class="nebula-dock-item" onclick="setBackgroundLayout('waves')">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Home</span>
+            </div>
+            <div class="nebula-dock-item" onclick="openWindow('library-window')">
+                <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                <span>Games</span>
+            </div>
+            <div class="nebula-dock-item" onclick="openWindow('settings-window')">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36.25c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <span>Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOT SEQUENCE OVERLAY -->
+    <div id="boot-screen">
+        <div id="win-logo">
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+        </div>
+        <div id="boot-text"></div>
+        <div id="boot-logo-container">
+            <h1 id="boot-logo">Diego26</h1>
+        </div>
+    </div>
+
+    <!-- MAIN OS DESKTOP -->
+    <div id="desktop">
+        <!-- Library -->
+        <div class="desktop-icon" onclick="openWindow('library-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>" alt="Library">
+            <span>Library</span>
+        </div>
+        <!-- Browser -->
+        <div class="desktop-icon" onclick="openWindow('custom-browser-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>" alt="Browser">
+            <span>Browser</span>
+        </div>
+        <!-- Files App -->
+        <div class="desktop-icon" onclick="openWindow('files-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'/></svg>" alt="Files">
+            <span>Files</span>
+        </div>
+        <!-- Notes App -->
+        <div class="desktop-icon" onclick="openWindow('notes-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'/></svg>" alt="Notes">
+            <span>Notes</span>
+        </div>
+        <!-- Calculator App -->
+        <div class="desktop-icon" onclick="openWindow('calc-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z'/></svg>" alt="Calculator">
+            <span>Calculator</span>
+        </div>
+        <!-- Settings App -->
+        <div class="desktop-icon" onclick="openWindow('settings-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36.25c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z'/></svg>" alt="Settings">
+            <span>Settings</span>
+        </div>
+        <!-- Toggle Widget Icon -->
+        <div class="desktop-icon" onclick="toggleWidget()">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23fff' viewBox='0 0 24 24'><path d='M4 4h16v16H4V4zm-2 0a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm10 4v8h-4V8h4zm6 0v8h-4V8h4z'/></svg>" alt="Widget">
+            <span>Toggle Log</span>
+        </div>
+
+        <div class="center-widget" id="main-widget">
+            <span class="widget-close" onclick="toggleWidget()">✕</span>
+            <h1 id="clock">12:00 PM</h1>
+            <p id="battery-status">Checking battery...</p>
+            <h3>Diego26 System</h3>
+            <p style="margin-top: 10px;">Version 2.4<br>Fully Functional Layout Switcher.</p>
+        </div>
+    </div>
+
+    <!-- Library Window -->
+    <div id="library-window" class="window">
+        <div class="window-header">
+            <span style="font-weight: bold;">Games & Proxies - Diego26</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('library-window')"></span>
+                <span class="btn-max" onclick="toggleMaximizeWindow('library-window')"></span>
+                <span class="btn-close" onclick="closeWindow('library-window')"></span>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="game-grid" id="link-container"></div>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Browser Window -->
+    <div id="custom-browser-window" class="window" style="width: 860px; height: 560px; top: 10%; left: 12%;">
+        <div class="window-header">
+            <span style="font-weight: bold; color: #fff;">Diego26 Browser (DuckDuckGo &amp; Proxy)</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('custom-browser-window')"></span>
+                <span class="btn-max" onclick="toggleMaximizeWindow('custom-browser-window')"></span>
+                <span class="btn-close" onclick="closeWindow('custom-browser-window')"></span>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="google-browser-toolbar">
+                <button class="google-nav-btn" onclick="browserBack()" title="Back">◀</button>
+                <button class="google-nav-btn" onclick="browserForward()" title="Forward">▶</button>
+                <button class="google-nav-btn" onclick="browserReload()" title="Reload">↻</button>
+                <button class="google-nav-btn" onclick="browserGoHome()" title="Home">⌂</button>
+                
+                <form class="google-url-form" onsubmit="handleBrowserSearch(event, 'google-url-input')">
+                    <span class="google-search-badge">DDG</span>
+                    <input type="text" id="google-url-input" placeholder="Search DuckDuckGo or enter a URL..." autocomplete="off">
+                </form>
+
+                <button id="google-proxy-toggle" class="google-proxy-btn active" onclick="toggleBrowserProxy()" title="Toggle Web Proxy Relay">
+                    Proxy: ON
+                </button>
+                <button class="google-nav-btn" onclick="openExternal()" title="Open current URL in new tab">↗</button>
+            </div>
+
+            <div class="google-browser-viewport">
+                <div id="google-proxy-loader">Routing through Proxy Relay...</div>
+
+                <div id="google-browser-home">
+                    <div class="google-logo-text">
+                        <span class="g-white">D</span><span class="g-gray">ie</span><span class="g-light">go</span><span class="g-gray">26</span>
+                    </div>
+                    <form class="google-home-search-box" onsubmit="handleBrowserSearch(event, 'google-home-input')">
+                        <input type="text" id="google-home-input" placeholder="Search with DuckDuckGo or type a URL..." autocomplete="off">
+                    </form>
+                    <div class="google-quick-shortcuts">
+                        <div class="google-shortcut-chip" onclick="navigateBrowser('https://lite.duckduckgo.com/lite/')">DuckDuckGo</div>
+                        <div class="google-shortcut-chip" onclick="navigateBrowser('https://en.wikipedia.org')">Wikipedia</div>
+                        <div class="google-shortcut-chip" onclick="navigateBrowser('https://archive.org')">Archive</div>
+                        <div class="google-shortcut-chip" onclick="navigateBrowser('https://news.ycombinator.com')">Hacker News</div>
+                    </div>
+                </div>
+
+                <iframe id="google-browser-frame" sandbox="allow-forms allow-scripts allow-same-origin allow-popups"></iframe>
+            </div>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Files App Window -->
+    <div id="files-window" class="window">
+        <div class="window-header">
+            <span style="font-weight: bold;">Diego26 File Manager</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('files-window')"></span>
+                <span class="btn-max" onclick="toggleMaximizeWindow('files-window')"></span>
+                <span class="btn-close" onclick="closeWindow('files-window')"></span>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="app-inner-content">
+                <div class="app-toolbar">
+                    <button class="app-btn" onclick="alert('Storage: 45.2 GB free of 64 GB')">Storage Info</button>
+                </div>
+                <div class="file-list">
+                    <div class="file-item">Documents</div>
+                    <div class="file-item">Downloads</div>
+                    <div class="file-item">SystemCache</div>
+                    <div class="file-item">config.json</div>
+                </div>
+            </div>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Notes App Window -->
+    <div id="notes-window" class="window">
+        <div class="window-header">
+            <span style="font-weight: bold;">Diego26 Notes</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('notes-window')"></span>
+                <span class="btn-max" onclick="toggleMaximizeWindow('notes-window')"></span>
+                <span class="btn-close" onclick="closeWindow('notes-window')"></span>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="app-inner-content">
+                <textarea class="note-area" placeholder="Type your notes here..."></textarea>
+            </div>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Calculator App Window -->
+    <div id="calc-window" class="window" style="width: 340px; height: 420px;">
+        <div class="window-header">
+            <span style="font-weight: bold;">Calculator</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('calc-window')"></span>
+                <span class="btn-close" onclick="closeWindow('calc-window')"></span>
+            </div>
+        </div>
+        <div class="window-content" style="align-items: center;">
+            <div style="width: 100%;">
+                <div class="calc-screen" id="calc-screen">0</div>
+                <div class="calc-grid">
+                    <button class="calc-btn" onclick="calcClear()">C</button>
+                    <button class="calc-btn" onclick="calcAppend('/')">÷</button>
+                    <button class="calc-btn" onclick="calcAppend('*')">×</button>
+                    <button class="calc-btn op" onclick="calcAppend('-')">-</button>
+                    <button class="calc-btn" onclick="calcAppend('7')">7</button>
+                    <button class="calc-btn" onclick="calcAppend('8')">8</button>
+                    <button class="calc-btn" onclick="calcAppend('9')">9</button>
+                    <button class="calc-btn op" onclick="calcAppend('+')">+</button>
+                    <button class="calc-btn" onclick="calcAppend('4')">4</button>
+                    <button class="calc-btn" onclick="calcAppend('5')">5</button>
+                    <button class="calc-btn" onclick="calcAppend('6')">6</button>
+                    <button class="calc-btn op" onclick="calcCompute()">=</button>
+                    <button class="calc-btn" onclick="calcAppend('1')">1</button>
+                    <button class="calc-btn" onclick="calcAppend('2')">2</button>
+                    <button class="calc-btn" onclick="calcAppend('3')">3</button>
+                    <button class="calc-btn" onclick="calcAppend('0')" style="grid-column: span 2;">0</button>
+                    <button class="calc-btn" onclick="calcAppend('.')">.</button>
+                </div>
+            </div>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Settings App Window with Layout Switcher -->
+    <div id="settings-window" class="window">
+        <div class="window-header">
+            <span style="font-weight: bold;">Diego26 Settings</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('settings-window')"></span>
+                <span class="btn-max" onclick="toggleMaximizeWindow('settings-window')"></span>
+                <span class="btn-close" onclick="closeWindow('settings-window')"></span>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="app-inner-content">
+                <h3>System Preferences</h3>
+                <p>OS Version: Diego26 Pro</p>
+                <br>
+                <h3>Background Layout Style</h3>
+                <p>Choose your active desktop layout:</p>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button class="app-btn" id="btn-waves" onclick="setBackgroundLayout('waves')" style="background: rgba(255,255,255,0.2);">36-Layer Waves</button>
+                    <button class="app-btn" id="btn-nebula" onclick="setBackgroundLayout('nebula')">Diego26 Layout</button>
+                </div>
+                <div style="margin-top: 25px;">
+                    <button class="app-btn" onclick="location.reload()">Restart System</button>
+                </div>
+            </div>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Iframe Container Window -->
+    <div id="iframe-window" class="window" style="width: 850px; height: 550px; top: 8%; left: 10%;">
+        <div class="window-header">
+            <span id="iframe-title" style="font-weight: bold;">Browser View</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('iframe-window')"></span>
+                <span class="btn-max" onclick="toggleMaximizeWindow('iframe-window')"></span>
+                <span class="btn-close" onclick="closeWindow('iframe-window')"></span>
+            </div>
+        </div>
+        <div class="window-content">
+            <iframe id="browser-frame" src=""></iframe>
+        </div>
+        <div class="resize-handle"></div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <div class="taskbar-left">
+            <span style="font-weight: bold; color: #fff;">Diego26 OS</span>
+            <div class="taskbar-icons">
+                <div class="taskbar-icon" onclick="openWindow('library-window')" title="Library">
+                    <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                </div>
+                <div class="taskbar-icon" onclick="openWindow('custom-browser-window')" title="Browser">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <div class="taskbar-icon" onclick="openWindow('files-window')" title="Files">
+                    <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+                </div>
+                <div class="taskbar-icon" onclick="openWindow('notes-window')" title="Notes">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </div>
+                <div class="taskbar-icon" onclick="openWindow('calc-window')" title="Calculator">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                </div>
+            </div>
+        </div>
+        <div class="taskbar-right">
+            <span id="fps-counter">FPS: 60</span>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 36-Layer Hyper-Charged Wave & Particle Engine ---
+        const canvas = document.getElementById('wave-canvas');
+        const ctx = canvas.getContext('2d');
+        let animationFrameId;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 50;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 50;
+        });
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const waveLayers = Array.from({ length: 36 }, (_, i) => {
+            const ratio = i / 36;
+            return {
+                speed: 0.005 + (i % 5) * 0.003,
+                amp: 40 + (i * 3) % 70,
+                freq: 0.002 + (i % 7) * 0.0012,
+                phase: i * 0.45,
+                yBase: 0.15 + ratio * 0.8,
+                fill: `rgba(${120 + Math.sin(i)*100}, ${120 + Math.cos(i)*100}, ${120 + i*3}, ${0.01 + (i % 3) * 0.012})`,
+                stroke: `rgba(255, 255, 255, ${0.04 + (i % 4) * 0.06})`,
+                parallax: 0.1 + ratio * 1.2
+            };
+        });
+
+        const particles = Array.from({ length: 120 }, () => ({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            r: Math.random() * 2 + 0.3,
+            vx: (Math.random() - 0.5) * 0.5,
+            vy: -Math.random() * 0.4 - 0.1,
+            alpha: Math.random() * 0.6 + 0.1
+        }));
+
+        let step = 0;
+        function drawWaves() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+
+                ctx.beginPath();
+                ctx.arc(p.x + mouseX * 0.15, p.y + mouseY * 0.15, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.fill();
+            });
+
+            waveLayers.forEach(layer => {
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height);
+
+                const pX = mouseX * layer.parallax;
+                const pY = mouseY * layer.parallax;
+
+                for (let x = 0; x <= canvas.width + 20; x += 10) {
+                    const primary = Math.sin((x + pX) * layer.freq + step * layer.speed * 20 + layer.phase) * layer.amp;
+                    const secondary = Math.cos((x - pX) * (layer.freq * 1.5) - step * layer.speed * 14) * (layer.amp * 0.4);
+                    const y = primary + secondary + (canvas.height * layer.yBase) + pY;
+                    ctx.lineTo(x, y);
+                }
+
+                ctx.strokeStyle = layer.stroke;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.lineTo(canvas.width, canvas.height);
+                ctx.lineTo(0, canvas.height);
+                ctx.closePath();
+                ctx.fillStyle = layer.fill;
+                ctx.fill();
+            });
+
+            step += 0.035;
+            animationFrameId = requestAnimationFrame(drawWaves);
+        }
+        drawWaves();
+
+        // --- Layout Switcher Logic ---
+        function setBackgroundLayout(type) {
+            const canvasEl = document.getElementById('wave-canvas');
+            const desktopEl = document.getElementById('desktop');
+            const nebulaEl = document.getElementById('nebula-layout');
+            const btnWaves = document.getElementById('btn-waves');
+            const btnNebula = document.getElementById('btn-nebula');
+
+            if (type === 'waves') {
+                canvasEl.style.display = 'block';
+                desktopEl.style.display = 'flex';
+                nebulaEl.style.display = 'none';
+                if (!animationFrameId) drawWaves();
+                if (btnWaves && btnNebula) {
+                    btnWaves.style.background = 'rgba(255,255,255,0.2)';
+                    btnNebula.style.background = 'rgba(255,255,255,0.08)';
+                }
+            } else if (type === 'nebula') {
+                canvasEl.style.display = 'none';
+                desktopEl.style.display = 'none';
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+                nebulaEl.style.display = 'flex';
+                if (btnWaves && btnNebula) {
+                    btnNebula.style.background = 'rgba(255,255,255,0.2)';
+                    btnWaves.style.background = 'rgba(255,255,255,0.08)';
+                }
+            }
+        }
+
+        // --- 2. Draggable & Resizable Window Engine ---
+        let highestZ = 100;
+
+        function bringToFront(win) {
+            highestZ++;
+            win.style.zIndex = highestZ;
+        }
+
+        document.querySelectorAll('.window').forEach(win => {
+            win.addEventListener('mousedown', () => bringToFront(win));
+
+            const header = win.querySelector('.window-header');
+            const resizer = win.querySelector('.resize-handle');
+
+            if (header) {
+                header.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.window-controls')) return;
+                    if (win.dataset.maximized === 'true') return;
+
+                    bringToFront(win);
+                    const rect = win.getBoundingClientRect();
+                    win.style.transform = 'none';
+                    win.style.left = rect.left + 'px';
+                    win.style.top = rect.top + 'px';
+
+                    const offsetX = e.clientX - rect.left;
+                    const offsetY = e.clientY - rect.top;
+
+                    document.querySelectorAll('iframe').forEach(ifr => ifr.style.pointerEvents = 'none');
+
+                    function onMouseMove(moveEvent) {
+                        let newLeft = moveEvent.clientX - offsetX;
+                        let newTop = moveEvent.clientY - offsetY;
+                        newTop = Math.max(0, Math.min(window.innerHeight - 60, newTop));
+                        win.style.left = newLeft + 'px';
+                        win.style.top = newTop + 'px';
+                    }
+
+                    function onMouseUp() {
+                        document.querySelectorAll('iframe').forEach(ifr => ifr.style.pointerEvents = 'auto');
+                        window.removeEventListener('mousemove', onMouseMove);
+                        window.removeEventListener('mouseup', onMouseUp);
+                    }
+
+                    window.addEventListener('mousemove', onMouseMove);
+                    window.addEventListener('mouseup', onMouseUp);
+                });
+            }
+
+            if (resizer) {
+                resizer.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    bringToFront(win);
+                    win.dataset.maximized = 'false';
+
+                    const rect = win.getBoundingClientRect();
+                    win.style.transform = 'none';
+                    win.style.left = rect.left + 'px';
+                    win.style.top = rect.top + 'px';
+
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startWidth = rect.width;
+                    const startHeight = rect.height;
+
+                    document.querySelectorAll('iframe').forEach(ifr => ifr.style.pointerEvents = 'none');
+
+                    function onResizeMove(moveEvent) {
+                        const newWidth = Math.max(320, startWidth + (moveEvent.clientX - startX));
+                        const newHeight = Math.max(240, startHeight + (moveEvent.clientY - startY));
+                        win.style.width = newWidth + 'px';
+                        win.style.height = newHeight + 'px';
+                    }
+
+                    function onResizeUp() {
+                        document.querySelectorAll('iframe').forEach(ifr => ifr.style.pointerEvents = 'auto');
+                        window.removeEventListener('mousemove', onResizeMove);
+                        window.removeEventListener('mouseup', onResizeUp);
+                    }
+
+                    window.addEventListener('mousemove', onResizeMove);
+                    window.addEventListener('mouseup', onResizeUp);
+                });
+            }
+        });
+
+        function toggleMaximizeWindow(id) {
+            const win = document.getElementById(id);
+            bringToFront(win);
+            if (win.dataset.maximized === 'true') {
+                win.style.width = win.dataset.prevWidth || '820px';
+                win.style.height = win.dataset.prevHeight || '540px';
+                win.style.top = win.dataset.prevTop || '12%';
+                win.style.left = win.dataset.prevLeft || '15%';
+                win.style.borderRadius = '12px';
+                win.dataset.maximized = 'false';
+            } else {
+                const rect = win.getBoundingClientRect();
+                win.dataset.prevWidth = rect.width + 'px';
+                win.dataset.prevHeight = rect.height + 'px';
+                win.dataset.prevTop = rect.top + 'px';
+                win.dataset.prevLeft = rect.left + 'px';
+
+                win.style.width = '100vw';
+                win.style.maxWidth = '100vw';
+                win.style.height = 'calc(100vh - 50px)';
+                win.style.top = '0px';
+                win.style.left = '0px';
+                win.style.borderRadius = '0';
+                win.dataset.maximized = 'true';
+            }
+        }
+
+        // --- 3. Boot Sequence Logic ---
+        const bootCode = `struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
+struct group_info *groups_alloc(int gidsetsize){
+    struct group_info *group_info;
+    int`;
+
+        const winLogoEl = document.getElementById('win-logo');
+        const bootTextEl = document.getElementById('boot-text');
+        const bootLogoCont = document.getElementById('boot-logo-container');
+        const bootScreen = document.getElementById('boot-screen');
+        let typeIndex = 0;
+
+        function startBootSequence() {
+            setTimeout(() => {
+                winLogoEl.style.display = 'none';
+                bootTextEl.style.display = 'block';
+                typeBootCode();
+            }, 1000);
+        }
+
+        function typeBootCode() {
+            if (typeIndex < bootCode.length) {
+                bootTextEl.textContent += bootCode.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeBootCode, 10); 
+            } else {
+                setTimeout(showBootLogo, 400); 
+            }
+        }
+
+        function showBootLogo() {
+            bootTextEl.style.display = 'none'; 
+            bootLogoCont.style.opacity = '1';  
+            
+            setTimeout(() => {
+                bootLogoCont.style.opacity = '0'; 
+                setTimeout(() => {
+                    bootScreen.style.opacity = '0'; 
+                    setTimeout(() => {
+                        bootScreen.style.display = 'none'; 
+                    }, 500);
+                }, 300);
+            }, 1200); 
+        }
+
+        window.onload = startBootSequence;
+
+        // --- 4. Clock & Battery Support ---
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').textContent = hours + ':' + minutes + ' ' + ampm;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function initBatterySupport() {
+            if ('getBattery' in navigator) {
+                navigator.getBattery().then(battery => {
+                    function updateBatteryInfo() {
+                        const level = Math.round(battery.level * 100);
+                        const charging = battery.charging ? 'Charging' : 'On Battery';
+                        document.getElementById('battery-status').textContent = `Battery: ${level}% (${charging})`;
+                    }
+                    updateBatteryInfo();
+                    battery.addEventListener('levelchange', updateBatteryInfo);
+                    battery.addEventListener('chargingchange', updateBatteryInfo);
+                });
+            } else {
+                document.getElementById('battery-status').textContent = 'Battery: AC Power';
+            }
+        }
+        initBatterySupport();
+
+        // --- 5. Widget Toggle ---
+        function toggleWidget() {
+            const widget = document.getElementById('main-widget');
+            widget.style.display = widget.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- 6. Window Open/Close ---
+        function openWindow(id) { 
+            const win = document.getElementById(id);
+            win.classList.add('active'); 
+            bringToFront(win);
+        }
+        function closeWindow(id) { 
+            document.getElementById(id).classList.remove('active');
+            if (id === 'iframe-window') {
+                document.getElementById('browser-frame').src = ''; 
+            }
+        }
+
+        function launchInIframe(url, name) {
+            document.getElementById('iframe-title').textContent = name;
+            document.getElementById('browser-frame').src = url;
+            openWindow('iframe-window');
+        }
+
+        // --- 7. Calculator Logic ---
+        let calcVal = '0';
+        function calcAppend(val) {
+            if (calcVal === '0' && val !== '.') {
+                calcVal = val;
+            } else {
+                calcVal += val;
+            }
+            document.getElementById('calc-screen').textContent = calcVal;
+        }
+        function calcClear() {
+            calcVal = '0';
+            document.getElementById('calc-screen').textContent = calcVal;
+        }
+        function calcCompute() {
+            try {
+                calcVal = eval(calcVal).toString();
+                document.getElementById('calc-screen').textContent = calcVal;
+            } catch (e) {
+                document.getElementById('calc-screen').textContent = 'Error';
+                calcVal = '0';
+            }
+        }
+
+        // --- 8. Link Library (Games & Proxies) ---
+        const proxyLinks = [
+            "Calcsolver.net", "Calcsolver.com", "Mathcheck.net", "Solvecalc.net",
+            "https://calcsolverpro.com", "https://figurestand.workerlo.workers.dev",
+            "bit.ly/nexlinkfinder", "https://storage.googleapis.com/opiumbest/index.html",
+            "https://ghostproxy.anonymoose.workers.dev/", "https://nocturne.lol/",
+            "https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg", "https://galxy.it.com/",
+            "https://helium-on.top/", "https://duckmath.org/", "https://mizumath.com/",
+            "https://sites.google.com/view/d3ltahubgames/home", "https://t9-is-the-goat.netlify.app/class.html",
+            "https://d1xzx4vznne13n.cloudfront.net/", "https://studysync.co.uk",
+            "https://cdn.jsdelivr.net/gh/lolhahusuckxj/Chud/games.svg", "https://menist.free.nf/?i=1",
+            "Calc.cyclopsproject.eu", "https://sites.google.com/view/vecta-unblocked/-_1",
+            "https://pirettisports.com/", "https://algebra.khastat.org", "https://frogiesarcade.win",
+            "https://math.leaning.cfd", "https://docs.unblinternetuniversity.workers.dev",
+            "question.gorich.hk", "blue.monkey.majoitus.ee", "s3.amazonaws.com", "they.misem.or.id",
+            "https://bull.chanka.com", "https://class.ryanjlowe.us", "https://education.schoolcity.cc",
+            "https://catz.touchgrassnow.org/", "https://uraniumsite.t20988828.workers.dev/",
+            "https://c00lkiddtech.live/", "https://yukios.netlify.app/", "https://vps-d38e82a1.vps.ovh.us/",
+            "https://xylora.org/", "https://a21ae49a9f4a.surge.sh/index.svg", "https://petezahgames.com/",
+            "https://tt.bookworm.com.np", "https://brainworxedu.github.io/classes.html",
+            "space.colegioitalocomposto.cl", "https://fluxv3-sooty.vercel.app/", "https://endis.rest",
+            "https://ajhsvault.org", "https://endis.college", "https://practice.rest",
+            "https://monoxide.dev/", "https://veterans4education.org/", "https://donutshop.vip/",
+            "https://sealsarcade.xyz", "https://mathlearn.nya.je", "https://kahoot.undo.it",
+            "https://mathnotes.ne-t.org", "https://aphistory.ra3.us", "https://classroom.xn--ds-bja.info",
+            "https://schoology.clienturl.net", "https://lost.dstand.com.au", "https://ixl-learn.jakesthoughts.xyz",
+            "https://happylearn.port82.net", "https://science-courses.xn--72cg7bdd3bro6b3ab9c8btw4x.com",
+            "https://ixl.ldtp.com", "https://quizlet.lozan.com", "https://yo-scan-this.qr-code.co.za",
+            "https://canvas.instructure.rkfd.com", "https://1.2.3.tokes.ro", "https://mathresources.dx4.uk",
+            "https://banana.ctx.cl", "https://banana.ftp.sh", "https://banana.jakesthoughts.xyz",
+            "https://banana.privatedns.org", "https://banana.rkfd.com",
+            "https://educationate2026.s3.us-east-2.amazonaws.com/index.html",
+            "https://geometry-302267745.b-cdn.net/", "https://science-411069385.b-cdn.net/",
+            "https://science-861197723.b-cdn.net"
+        ];
+
+        const container = document.getElementById('link-container');
+        
+        proxyLinks.forEach((link, index) => {
+            const card = document.createElement('div');
+            let href = link.trim();
+            if (!href.startsWith('http') && !href.startsWith('bit.ly') && !href.includes('://')) {
+                href = 'https://' + href;
+            } else if (href.startsWith('bit.ly')) {
+                href = 'https://' + href;
+            }
+            
+            card.className = "game-card";
+            
+            let displayName = link.replace('https://', '').replace('http://', '').split('/')[0];
+            if (displayName.includes('seattleschools') || displayName.includes('jsdelivr') || displayName.length > 22) {
+                displayName = "Proxy Node " + (index + 1);
+            }
+            card.textContent = displayName;
+            
+            card.onclick = () => {
+                launchInIframe(href, displayName);
+            };
+
+            container.appendChild(card);
+        });
+
+        // --- 9. Mock FPS Counter ---
+        setInterval(() => {
+            document.getElementById('fps-counter').textContent = 'FPS: ' + (Math.floor(Math.random() * (62 - 58 + 1)) + 58);
+        }, 1000);
+
+        // --- 10. Browser Logic (DuckDuckGo + Proxy Relay) ---
+        let browserProxyEnabled = true;
+        let browserHistory = [];
+        let browserHistoryIndex = -1;
+
+        function toggleBrowserProxy() {
+            browserProxyEnabled = !browserProxyEnabled;
+            const btn = document.getElementById('google-proxy-toggle');
+            if (browserProxyEnabled) {
+                btn.classList.add('active');
+                btn.textContent = 'Proxy: ON';
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = 'Proxy: OFF';
+            }
+            if (browserHistoryIndex >= 0) {
+                loadBrowserUrl(browserHistory[browserHistoryIndex], false);
+            }
+        }
+
+        function handleBrowserSearch(event, inputId) {
+            event.preventDefault();
+            const rawInput = document.getElementById(inputId).value.trim();
+            if (!rawInput) return;
+
+            let targetUrl = '';
+            const isUrl = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(rawInput) && !rawInput.includes(' ');
+            if (isUrl) {
+                targetUrl = rawInput.startsWith('http://') || rawInput.startsWith('https://') ? rawInput : 'https://' + rawInput;
+            } else {
+                targetUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(rawInput);
+            }
+
+            navigateBrowser(targetUrl);
+        }
+
+        function navigateBrowser(url) {
+            browserHistory = browserHistory.slice(0, browserHistoryIndex + 1);
+            browserHistory.push(url);
+            browserHistoryIndex = browserHistory.length - 1;
+            loadBrowserUrl(url, true);
+        }
+
+        async function loadBrowserUrl(url, updateInput) {
+            const homeView = document.getElementById('google-browser-home');
+            const frame = document.getElementById('google-browser-frame');
+            const loader = document.getElementById('google-proxy-loader');
+            const urlInput = document.getElementById('google-url-input');
+
+            if (updateInput) {
+                urlInput.value = url;
+            }
+
+            homeView.style.display = 'none';
+            frame.style.display = 'block';
+
+            if (!browserProxyEnabled) {
+                loader.style.display = 'none';
+                frame.removeAttribute('srcdoc');
+                frame.src = url;
+                return;
+            }
+
+            loader.style.display = 'flex';
+            try {
+                let fetchTarget = url;
+                if (url.startsWith('https://duckduckgo.com/?q=')) {
+                    const q = url.split('?q=')[1];
+                    fetchTarget = 'https://html.duckduckgo.com/html/?q=' + q;
+                }
+
+                const proxyEndpoint = 'https://api.allorigins.win/get?url=' + encodeURIComponent(fetchTarget);
+                const response = await fetch(proxyEndpoint);
+                if (!response.ok) throw new Error('Proxy network response error');
+                const data = await response.json();
+
+                if (data && data.contents) {
+                    const baseTag = `<base href="${fetchTarget}">`;
+                    let htmlContent = data.contents;
+                    if (/<head[^>]*>/i.test(htmlContent)) {
+                        htmlContent = htmlContent.replace(/<head[^>]*>/i, match => `${match}\n${baseTag}`);
+                    } else {
+                        htmlContent = baseTag + htmlContent;
+                    }
+                    frame.removeAttribute('src');
+                    frame.srcdoc = htmlContent;
+                } else {
+                    throw new Error('Empty proxy payload');
+                }
+            } catch (err) {
+                frame.removeAttribute('srcdoc');
+                frame.src = url;
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        function browserGoHome() {
+            document.getElementById('google-browser-frame').style.display = 'none';
+            document.getElementById('google-browser-frame').src = '';
+            document.getElementById('google-browser-frame').removeAttribute('srcdoc');
+            document.getElementById('google-proxy-loader').style.display = 'none';
+            document.getElementById('google-browser-home').style.display = 'flex';
+            document.getElementById('google-url-input').value = '';
+        }
+
+        function browserBack() {
+            if (browserHistoryIndex > 0) {
+                browserHistoryIndex--;
+                loadBrowserUrl(browserHistory[browserHistoryIndex], true);
+            } else if (browserHistoryIndex === 0) {
+                browserHistoryIndex = -1;
+                browserGoHome();
+            }
+        }
+
+        function browserForward() {
+            if (browserHistoryIndex < browserHistory.length - 1) {
+                browserHistoryIndex++;
+                loadBrowserUrl(browserHistory[browserHistoryIndex], true);
+            }
+        }
+
+        function browserReload() {
+            if (browserHistoryIndex >= 0) {
+                loadBrowserUrl(browserHistory[browserHistoryIndex], false);
+            }
+        }
+
+        function openExternal() {
+            const current = browserHistoryIndex >= 0 ? browserHistory[browserHistoryIndex] : 'https://duckduckgo.com';
+            window.open(current, '_blank');
+        }
+    </script>
+</body>
+</html>
